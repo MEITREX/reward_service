@@ -1,59 +1,59 @@
 version: "3"
 
 services:
-  database-template:
+  database-reward:
     image: postgres:alpine
     restart: always
     network_mode: bridge
     expose:
-      - 1032
+      - 7032
     ports:
-      - "1032:5432"
+      - "7032:5432"
     volumes:
       - templatedata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=templatedatabase
-  app-template:
+  app-reward:
     build:
-      context: ./../template-microservice # necessary because otherwise docker-compose overrides the context path when merging multiple docker-compose.yml files
+      context: ./../reward_service # necessary because otherwise docker-compose overrides the context path when merging multiple docker-compose.yml files
       dockerfile: Dockerfile
     restart: always
-    container_name: template_microservice
+    container_name: reward_service
     expose:
-      - 1000
-      - 1001
+      - 7000
+      - 7001
     ports:
-      - "1000:1000"
-      - "1001:1001"
+      - "7000:7000"
+      - "7001:7001"
     depends_on:
-      - database-template
+      - database-reward
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database-template:5432/templatedatabase
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database-reward:7032/reward_service
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-  dapr-template:
+  dapr-reward:
     image: "daprio/daprd"
     command: [
       "./daprd",
-      "--app-id", "template_service",
-      "--app-port", "1001",
-      "--dapr-http-port", "1000",
+      "--app-id", "reward_service",
+      "--app-port", "7001",
+      "--dapr-http-port", "7000",
       "--resources-path", "./components"
     ]
     volumes:
-      - "./../template-microservice/components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
+      - "./../reward-microservice/components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
     depends_on:
-      - app-template
+      - app-reward
       - redis
-    network_mode: "service:app-template"
+    network_mode: "service:app-reward"
   redis:
     image: "redis:alpine"
     expose:
       - "6379"
 volumes:
-  templatedata:
+  rewarddata:
   testdata:
 networks:
   default:

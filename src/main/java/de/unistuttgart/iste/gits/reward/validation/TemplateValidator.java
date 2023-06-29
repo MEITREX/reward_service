@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.template.validation;
+package de.unistuttgart.iste.gits.reward.validation;
 
 import de.unistuttgart.iste.gits.generated.dto.Template;
 import org.springframework.stereotype.Component;

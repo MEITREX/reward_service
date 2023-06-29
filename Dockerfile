@@ -12,4 +12,4 @@ ARG DEPENDENCY=/workspace/app/build/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
 COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-ENTRYPOINT ["java","-cp","app:app/lib/*","de.unistuttgart.iste.gits.template.TemplateForMicroservicesApplication"]
+ENTRYPOINT ["java","-cp","app:app/lib/*","de.unistuttgart.iste.gits.reward.RewardServiceApplication"]

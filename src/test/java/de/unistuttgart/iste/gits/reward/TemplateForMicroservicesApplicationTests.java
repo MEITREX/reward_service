@@ -1,6 +1,5 @@
-package de.unistuttgart.iste.gits.template;
+package de.unistuttgart.iste.gits.reward;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest

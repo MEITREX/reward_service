@@ -1,9 +1,9 @@
-package de.unistuttgart.iste.gits.template.service;
+package de.unistuttgart.iste.gits.reward.service;
 
 import de.unistuttgart.iste.gits.generated.dto.Template;
-import de.unistuttgart.iste.gits.template.persistence.dao.TemplateEntity;
-import de.unistuttgart.iste.gits.template.persistence.mapper.TemplateMapper;
-import de.unistuttgart.iste.gits.template.persistence.repository.TemplateRepository;
+import de.unistuttgart.iste.gits.reward.persistence.dao.TemplateEntity;
+import de.unistuttgart.iste.gits.reward.persistence.mapper.TemplateMapper;
+import de.unistuttgart.iste.gits.reward.persistence.repository.TemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
