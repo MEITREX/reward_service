@@ -1,16 +1,116 @@
-# schema file of the microservice
-
-# TODO define data types, queries and mutations
-# this can be done in a separate files as long as they are in this folder and
-# end with .graphqls
-
-
-# example
-type Template {
-  id: ID!
-  name: String!
+type Query {
+    """
+    Get the reward score of the user.
+    """
+    rewardScore(courseId: UUID!, userId: UUID!): RewardScores!
 }
 
-type Query {
-  templates: [Template]
+type Mutation {
+    """
+    ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
+
+    Triggers the recalculation of the reward score of the user.
+    This is done automatically at some time in the night.
+
+    The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
+    """
+    updateRewardScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
+}
+
+"""
+The five reward scores of a user.
+"""
+type RewardScores {
+    """
+    Health represents how up-to-date the user is with the course.
+    """
+    health: RewardScore!
+    """
+    Fitness represents how well the user repeats previously learned content.
+    """
+    fitness: RewardScore!
+    """
+    Growth represents the overall progress of the user.
+    """
+    growth: RewardScore!
+    """
+    Strength is earned by competing with other users.
+    """
+    strength: RewardScore!
+    """
+    A composite score of all the other scores.
+    """
+    power: RewardScore!
+}
+
+"""
+The reward score of a user.
+"""
+type RewardScore {
+    """
+    The value of the reward score.
+    Health and fitness are between 0 and 100.
+    Growth, strength and power can be any non-negative integer.
+    """
+    value: Int!
+    """
+    A log of the changes to the reward score, ordered by date descending.
+    """
+    log: [RewardLogItem!]!
+}
+
+"""
+An item in the reward score log.
+"""
+type RewardLogItem {
+    """
+    The date when the reward score changed.
+    """
+    date: DateTime!
+    """
+    The difference between the previous and the new reward score.
+    """
+    difference: Int!
+    """
+    The old reward score.
+    """
+    oldValue: Int!
+    """
+    The new reward score.
+    """
+    newValue: Int!
+    """
+    The reason why the reward score has changed.
+    """
+    reason: RewardChangeReason!
+    """
+    The contents that are associated with the change.
+    """
+    associatedContents: [UUID!]!
+}
+
+"""
+The reason why the reward score has changed.
+"""
+enum RewardChangeReason {
+    """
+    The user has completed a content for the first time.
+    The associated contents are the content that were completed.
+    """
+    CONTENT_DONE,
+    """
+    The user has reviewed a content.
+    The associated contents are the content that were reviewed.
+    """
+    CONTENT_REVIEWED,
+    """
+    There exists a content that is due for learning.
+    The associated contents are the content that are due for learning.
+    """
+    CONTENT_DUE_FOR_LEARNING,
+    """
+    There exists a content that is due for repetition.
+    The associated contents are the content that are due for repetition.
+    """
+    CONTENT_DUE_FOR_REPETITION,
 }
