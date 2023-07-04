@@ -38,5 +38,5 @@ public class RewardScoreLogEntry {
     private RewardChangeReason reason;
 
     @ElementCollection
-    private List<UUID> associatedContents;
+    private List<UUID> associatedContentIds;
 }

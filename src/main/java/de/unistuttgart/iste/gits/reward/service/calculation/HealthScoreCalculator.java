@@ -40,7 +40,7 @@ public class HealthScoreCalculator implements ScoreCalculator {
                 .newValue(oldScore + diff)
                 .oldValue(oldScore)
                 .reason(RewardChangeReason.CONTENT_DUE_FOR_LEARNING)
-                .associatedContents(getIds(newDueContents))
+                .associatedContentIds(getIds(newDueContents))
                 .build();
 
         rewardScore.setValue(oldScore + diff);
@@ -81,7 +81,7 @@ public class HealthScoreCalculator implements ScoreCalculator {
                 .newValue(newValue)
                 .oldValue(oldScore)
                 .reason(RewardChangeReason.CONTENT_DONE)
-                .associatedContents(List.of(event.getContentId()))
+                .associatedContentIds(List.of(event.getContentId()))
                 .build();
 
         rewardScore.setValue(newValue);

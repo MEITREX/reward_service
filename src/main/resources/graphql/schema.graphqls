@@ -1,8 +1,12 @@
 type Query {
     """
-    Get the reward score of the user.
+    Get the reward score of the current user for the specified course.
     """
-    rewardScores(courseId: UUID!, userId: UUID!): RewardScores!
+    userCourseRewardScores(courseId: UUID!): RewardScores!
+    """
+    Get the reward score of the specified user for the specified course.
+    """
+    courseRewardScoresForUser(courseId: UUID!, userId: UUID!): RewardScores!
 }
 
 type Mutation {
@@ -84,9 +88,9 @@ type RewardLogItem {
     """
     reason: RewardChangeReason!
     """
-    The contents that are associated with the change.
+    The ids of the contents that are associated with the change.
     """
-    associatedContents: [UUID!]!
+    associatedContentIds: [UUID!]!
 }
 
 """
