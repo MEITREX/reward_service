@@ -22,7 +22,7 @@ if (jacocoEnabled.toBoolean()) {
 
 sonarqube {
   properties {
-    property("sonar.projectKey", "IT-REX-Platform_template-microservice")
+    property("sonar.projectKey", "IT-REX-Platform_reward_service")
     property("sonar.organization", "it-rex-platform")
     property("sonar.host.url", "https://sonarcloud.io")
   }
@@ -72,6 +72,11 @@ dependencies {
 			branch = 'main'
 		}
 	}
+	implementation('de.unistuttgart.iste.gits:content_service') { // include content service for DTOs
+		version {
+			branch = 'main'
+		}
+	}
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -79,6 +84,9 @@ dependencies {
 	implementation 'org.modelmapper:modelmapper:3.+'
 	implementation 'com.graphql-java:graphql-java-extended-scalars:20.0'
 	implementation 'com.graphql-java:graphql-java-extended-validation:20.0'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'io.dapr:dapr-sdk:1.9.0' // Dapr's core SDK with all features, except Actors.
+	implementation 'io.dapr:dapr-sdk-springboot:1.9.0' // Dapr's SDK integration with SpringBoot
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'

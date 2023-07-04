@@ -4,17 +4,16 @@ services:
   database-reward:
     image: postgres:alpine
     restart: always
-    network_mode: bridge
     expose:
       - 7032
     ports:
       - "7032:5432"
     volumes:
-      - templatedata:/var/lib/postgresql/data
+      - rewarddata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=templatedatabase
+      - POSTGRES_DB=reward_service
   app-reward:
     build:
       context: ./../reward_service # necessary because otherwise docker-compose overrides the context path when merging multiple docker-compose.yml files
@@ -30,7 +29,7 @@ services:
     depends_on:
       - database-reward
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database-reward:7032/reward_service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database-reward:5432/reward_service
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
   dapr-reward:
@@ -43,7 +42,7 @@ services:
       "--resources-path", "./components"
     ]
     volumes:
-      - "./../reward-microservice/components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
+      - "./../reward_service/components/:/components" # Mount our components folder for the runtime to use. The mounted location must match the --resources-path argument.
     depends_on:
       - app-reward
       - redis

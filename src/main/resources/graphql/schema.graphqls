@@ -2,7 +2,7 @@ type Query {
     """
     Get the reward score of the user.
     """
-    rewardScore(courseId: UUID!, userId: UUID!): RewardScores!
+    rewardScores(courseId: UUID!, userId: UUID!): RewardScores!
 }
 
 type Mutation {
@@ -14,7 +14,7 @@ type Mutation {
 
     The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
     """
-    updateRewardScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
+    recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
 }
 
 """
