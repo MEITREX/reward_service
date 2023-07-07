@@ -3,6 +3,7 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
+import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
 import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreLogEntry;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,9 @@ public class HealthScoreCalculator implements ScoreCalculator {
     public static final double HEALTH_DECREASE_CAP = -20.0;
 
     @Override
-    public RewardScoreEntity recalculateScore(RewardScoreEntity rewardScore,
+    public RewardScoreEntity recalculateScore(AllRewardScoresEntity allRewardScores,
                                               List<Content> contents) {
+        RewardScoreEntity rewardScore = allRewardScores.getHealth();
         int oldScore = rewardScore.getValue();
         OffsetDateTime today = OffsetDateTime.now();
 
@@ -51,9 +53,10 @@ public class HealthScoreCalculator implements ScoreCalculator {
 
     @Override
     public RewardScoreEntity calculateOnContentWorkedOn(
-            RewardScoreEntity rewardScore,
+            AllRewardScoresEntity allRewardScoresEntity,
             List<Content> contents,
             UserProgressLogEvent event) {
+        RewardScoreEntity rewardScore = allRewardScoresEntity.getHealth();
 
         int oldScore = rewardScore.getValue();
         int diffToFull = 100 - oldScore;

@@ -52,15 +52,15 @@ public class RewardService {
         List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
 
         allRewardScoresEntity
-                .setHealth(healthScoreCalculator.recalculateScore(allRewardScoresEntity.getHealth(), contents));
+                .setHealth(healthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
         allRewardScoresEntity
-                .setFitness(fitnessScoreCalculator.recalculateScore(allRewardScoresEntity.getFitness(), contents));
+                .setFitness(fitnessScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
         allRewardScoresEntity
-                .setStrength(strengthScoreCalculator.recalculateScore(allRewardScoresEntity.getStrength(), contents));
+                .setStrength(strengthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
         allRewardScoresEntity
-                .setPower(powerScoreCalculator.recalculateScore(allRewardScoresEntity.getPower(), contents));
+                .setPower(powerScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
         allRewardScoresEntity
-                .setGrowth(growthScoreCalculator.recalculateScore(allRewardScoresEntity.getGrowth(), contents));
+                .setGrowth(growthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
 
         var result = rewardScoresRepository.save(allRewardScoresEntity);
 
@@ -111,15 +111,15 @@ public class RewardService {
                 = contentServiceClient.getContentsWithUserProgressData(event.getUserId(), chapterIds);
 
         allRewardScoresEntity.setHealth(healthScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity.getHealth(), contents, event));
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
         allRewardScoresEntity.setFitness(fitnessScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity.getFitness(), contents, event));
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
         allRewardScoresEntity.setStrength(strengthScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity.getStrength(), contents, event));
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
         allRewardScoresEntity.setPower(powerScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity.getPower(), contents, event));
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
         allRewardScoresEntity.setGrowth(growthScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity.getGrowth(), contents, event));
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
 
         allRewardScoresEntity = rewardScoresRepository.save(allRewardScoresEntity);
 
