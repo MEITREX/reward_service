@@ -7,6 +7,10 @@ type Query {
     Get the reward score of the specified user for the specified course.
     """
     courseRewardScoresForUser(courseId: UUID!, userId: UUID!): RewardScores!
+    """
+    Gets the power scores for each user in the course, ordered by power score descending.
+    """
+    scoreboard(courseId: UUID!): [ScoreboardItem!]!
 }
 
 type Mutation {
@@ -117,4 +121,18 @@ enum RewardChangeReason {
     The associated contents are the content that are due for repetition.
     """
     CONTENT_DUE_FOR_REPETITION,
+}
+
+"""
+An item in the scoreboard.
+"""
+type ScoreboardItem {
+    """
+    The user id of the user.
+    """
+    userId: UUID!
+    """
+    The power score of the user.
+    """
+    powerScore: Int!
 }
