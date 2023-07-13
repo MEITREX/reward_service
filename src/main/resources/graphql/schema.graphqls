@@ -121,6 +121,11 @@ enum RewardChangeReason {
     The associated contents are the content that are due for repetition.
     """
     CONTENT_DUE_FOR_REPETITION,
+    """
+    The score changed because the underlying scores changed.
+    Relevant for the power score.
+    """
+    COMPOSITE_VALUE,
 }
 
 """
