@@ -3,6 +3,7 @@ package de.unistuttgart.iste.gits.reward.service;
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.RewardScores;
+import de.unistuttgart.iste.gits.generated.dto.ScoreboardItem;
 import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
 import de.unistuttgart.iste.gits.reward.persistence.mapper.RewardScoreMapper;
@@ -14,9 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -144,4 +143,23 @@ public class RewardService {
         return rewardScoreEntity;
     }
 
+
+    /**
+     * Returns the scoreboard for a specific course. Sorted by power from highest to lowest.
+     * @param courseId of the course for which the scoreboard should be retrieved
+     * @return scoreboard
+     */
+    public List<ScoreboardItem> getScoreboard(UUID courseId) {
+        List<AllRewardScoresEntity> courseRewardScoreEntities = rewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(courseId);
+        List<ScoreboardItem> scoreboard = new ArrayList<>();
+
+        for (var rewardScore : courseRewardScoreEntities) {
+            ScoreboardItem scoreboardItem = new ScoreboardItem(rewardScore.getId().getUserId(), rewardScore.getPower().getValue());
+            scoreboard.add(scoreboardItem);
+        }
+
+        return scoreboard.stream()
+                .sorted(Comparator.comparing(ScoreboardItem::getPowerScore).reversed())
+                .toList();
+    }
 }
