@@ -56,11 +56,17 @@ The reward score of a user.
 """
 type RewardScore {
     """
-    The value of the reward score.
+    The absolute value of the reward score.
     Health and fitness are between 0 and 100.
     Growth, strength and power can be any non-negative integer.
     """
     value: Int!
+    """
+    The relative value of the reward score.
+    Shows how many points relative to the total points have been achieved.
+    Only used for growth currently.
+    """
+    percentage: Float!
     """
     A log of the changes to the reward score, ordered by date descending.
     """
