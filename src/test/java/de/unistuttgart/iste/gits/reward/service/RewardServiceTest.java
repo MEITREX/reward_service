@@ -16,7 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 
-public class RewardServiceTest {
+class RewardServiceTest {
 
     private final AllRewardScoresRepository allRewardScoresRepository = mock(AllRewardScoresRepository.class);
     private final RewardScoreMapper rewardScoreMapper = mock(RewardScoreMapper.class);
