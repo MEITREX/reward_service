@@ -19,14 +19,12 @@ public class PowerScoreCalculator implements ScoreCalculator {
 
     @Override
     public RewardScoreEntity recalculateScore(AllRewardScoresEntity allRewardScores, List<Content> contents) {
-        RewardScoreEntity power = calculatePowerScore(allRewardScores);
-        return power;
+        return calculatePowerScore(allRewardScores);
     }
 
     @Override
     public RewardScoreEntity calculateOnContentWorkedOn(AllRewardScoresEntity allRewardScores, List<Content> contents, UserProgressLogEvent event) {
-        RewardScoreEntity power = calculatePowerScore(allRewardScores);
-        return power;
+        return calculatePowerScore(allRewardScores);
     }
 
     private RewardScoreEntity calculatePowerScore(AllRewardScoresEntity allRewardScores) {

@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.gits.reward.service;
 
-import de.unistuttgart.iste.gits.generated.dto.ScoreboardItem;
+import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
+import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
 import de.unistuttgart.iste.gits.reward.persistence.mapper.RewardScoreMapper;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,6 +41,125 @@ class RewardServiceTest {
             strengthScoreCalculator,
             powerScoreCalculator,
             growthScoreCalculator);
+
+    /**
+     * Given a courseId and userID
+     * when initializeRewardScores is called
+     * Then create a new allRewardScoresEntity with the default values
+     */
+    @Test
+    void testInitializeRewardScoreEntity() {
+        UUID courseId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        AllRewardScoresEntity expectedEntity = dummyAllRewardScoresBuilder(courseId, userId).build();
+
+        when(allRewardScoresRepository.save(any())).thenReturn(expectedEntity);
+
+        AllRewardScoresEntity rewardScoresEntity = rewardService.initializeRewardScores(courseId, userId);
+
+        verify(allRewardScoresRepository).save(any());
+        assertThat(rewardScoresEntity, is(expectedEntity));
+
+    }
+
+    /**
+     * Given a progressEvent
+     * when calculateScoresOnContentWorkedOn is called
+     * Then update the rewardScores and return it
+     */
+    @Test
+    void testCalculateScoresOnContentWorkedOn() {
+        UUID contentId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        UUID userID = UUID.randomUUID();
+        UUID chapterId1 = UUID.randomUUID();
+        UUID chapterId2 = UUID.randomUUID();
+
+        AllRewardScoresEntity.PrimaryKey primaryKey = new AllRewardScoresEntity.PrimaryKey(courseId, userID);
+
+        UserProgressData progressData = UserProgressData.builder().build();
+        List<UUID> chapterIds = List.of(chapterId1, chapterId2);
+        List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
+
+        UserProgressLogEvent event = UserProgressLogEvent.builder()
+                .userId(userID)
+                .contentId(contentId)
+                .correctness(1)
+                .hintsUsed(0)
+                .success(true)
+                .build();
+
+        AllRewardScoresEntity allRewardScoresEntity = dummyAllRewardScoresBuilder(courseId, userID).build();
+
+        RewardScores expectedRewardScores = new RewardScores(
+                new RewardScore(100, 0, null),
+                new RewardScore(100, 0, null),
+                new RewardScore(0, 0, null),
+                new RewardScore(0, 0, null),
+                new RewardScore(0, 0, null));
+
+        when(allRewardScoresRepository.findById(primaryKey)).thenReturn(Optional.ofNullable(allRewardScoresEntity));
+        when(allRewardScoresRepository.save(any())).thenReturn(allRewardScoresEntity);
+        when(courseServiceClient.getCourseIdForContent(event.getContentId())).thenReturn(courseId);
+        when(courseServiceClient.getChapterIds(courseId)).thenReturn(chapterIds);
+        when(contentServiceClient.getContentsWithUserProgressData(userID, chapterIds)).thenReturn(contents);
+        when(rewardScoreMapper.entityToDto(allRewardScoresEntity)).thenReturn(expectedRewardScores);
+
+        RewardScores rewardScores = rewardService.calculateScoresOnContentWorkedOn(event);
+
+        assertThat(rewardScores, is(expectedRewardScores));
+        verify(allRewardScoresRepository).save(any());
+        verify(allRewardScoresRepository).findById(primaryKey);
+        verify(courseServiceClient).getCourseIdForContent(contentId);
+        verify(courseServiceClient).getChapterIds(courseId);
+        verify(contentServiceClient).getContentsWithUserProgressData(userID, chapterIds);
+        verify(rewardScoreMapper).entityToDto(allRewardScoresEntity);
+
+    }
+
+    /**
+     * Given a rewardScore
+     * when recalculateScores is called
+     * Then update the rewardScores and return it
+     */
+    @Test
+    void testRecalculateScores() {
+        UUID courseId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID contentId = UUID.randomUUID();
+        UUID chapterId1 = UUID.randomUUID();
+        UUID chapterId2 = UUID.randomUUID();
+
+        UserProgressData progressData = UserProgressData.builder().build();
+        AllRewardScoresEntity allRewardScoresEntity = dummyAllRewardScoresBuilder(courseId, userId).build();
+        AllRewardScoresEntity.PrimaryKey primaryKey = new AllRewardScoresEntity.PrimaryKey(courseId, userId);
+        List<UUID> chapterIds = List.of(chapterId1, chapterId2);
+        List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
+
+        RewardScores expectedRewardScores = new RewardScores(
+                new RewardScore(100, 0, null),
+                new RewardScore(100, 0, null),
+                new RewardScore(0, 0, null),
+                new RewardScore(0, 0, null),
+                new RewardScore(0, 0, null));
+
+        when(allRewardScoresRepository.findById(primaryKey)).thenReturn(Optional.ofNullable(allRewardScoresEntity));
+        when(allRewardScoresRepository.save(any())).thenReturn(allRewardScoresEntity);
+        when(courseServiceClient.getChapterIds(courseId)).thenReturn(chapterIds);
+        when(contentServiceClient.getContentsWithUserProgressData(userId, chapterIds)).thenReturn(contents);
+        when(rewardScoreMapper.entityToDto(allRewardScoresEntity)).thenReturn(expectedRewardScores);
+
+        RewardScores rewardScores = rewardService.recalculateScores(courseId, userId);
+
+        assertThat(rewardScores, is(expectedRewardScores));
+        verify(allRewardScoresRepository).findById(primaryKey);
+        verify(allRewardScoresRepository).save(any());
+        verify(courseServiceClient).getChapterIds(courseId);
+        verify(contentServiceClient).getContentsWithUserProgressData(userId, chapterIds);
+        verify(rewardScoreMapper).entityToDto(allRewardScoresEntity);
+
+    }
 
     /**
      * Given courseId
@@ -99,6 +220,13 @@ class RewardServiceTest {
         return rewardScoreEntity;
     }
 
+    private Content createContentWithUserData(UUID contentId, UserProgressData userProgressData) {
+        return FlashcardSetAssessment.builder()
+                .setId(contentId)
+                .setAssessmentMetadata(AssessmentMetadata.builder().build())
+                .setUserProgressData(userProgressData)
+                .build();
+    }
 
 }
 

@@ -11,17 +11,13 @@ import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreLogEntry;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 @Component
 public class GrowthScoreCalculator implements ScoreCalculator {
     @Override
     public RewardScoreEntity recalculateScore(AllRewardScoresEntity allRewardScores, List<Content> contents) {
-        RewardScoreEntity growthScore = allRewardScores.getGrowth();
-
-        return growthScore;
+        return allRewardScores.getGrowth();
     }
 
     @Override

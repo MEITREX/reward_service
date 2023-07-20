@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 @GraphQlApiTest
-public class QueryScoreboardTest {
+class QueryTest {
 
     @Autowired
     AllRewardScoresRepository allRewardScoresRepository;
@@ -26,8 +26,64 @@ public class QueryScoreboardTest {
     @Autowired
     RewardService rewardService;
 
+
+
+
     /**
-     * Given two rewardscores exist
+     * Given a user with a rewardScore exist
+     * When the rewardScore is queried
+     * Then the rewardScore is returned
+     */
+    @Test
+    void testCourseRewardScoresForUser(GraphQlTester tester) {
+        UUID courseId = UUID.randomUUID();
+        UUID user = UUID.randomUUID();
+
+        allRewardScoresRepository.save(AllRewardScoresEntity.builder()
+                .id(new AllRewardScoresEntity.PrimaryKey(courseId, user))
+                .health(initializeRewardScoreEntity(100))
+                .strength(initializeRewardScoreEntity(0))
+                .fitness(initializeRewardScoreEntity(100))
+                .growth(initializeRewardScoreEntity(0))
+                .power(initializeRewardScoreEntity(0))
+                .build());
+
+        String query = """
+                 query($courseId: UUID!, $userId: UUID!) {
+                    courseRewardScoresForUser(courseId: $courseId, userId: $userId) {
+                        health {
+                            value
+                        }
+                        fitness {
+                            value
+                        }
+                        growth {
+                            value
+                        }
+                        strength {
+                            value
+                        }
+                        power {
+                            value
+                        }
+                    
+                    }
+                }
+                """;
+
+        tester.document(query)
+                .variable("courseId", courseId)
+                .variable("userId", user)
+                .execute()
+                .path("courseRewardScoresForUser.health.value").entity(Integer.class).isEqualTo(100)
+                .path("courseRewardScoresForUser.fitness.value").entity(Integer.class).isEqualTo(100)
+                .path("courseRewardScoresForUser.growth.value").entity(Integer.class).isEqualTo(0)
+                .path("courseRewardScoresForUser.strength.value").entity(Integer.class).isEqualTo(0)
+                .path("courseRewardScoresForUser.power.value").entity(Integer.class).isEqualTo(0);
+    }
+
+    /**
+     * Given two rewardScores exist
      * When the scoreboard is queried
      * Then the scoreboard is returned with the correct scores
      */
