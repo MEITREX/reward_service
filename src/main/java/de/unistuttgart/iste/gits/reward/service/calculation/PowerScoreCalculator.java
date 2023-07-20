@@ -3,9 +3,7 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
-import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreLogEntry;
+import de.unistuttgart.iste.gits.reward.persistence.dao.*;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -34,7 +32,7 @@ public class PowerScoreCalculator implements ScoreCalculator {
         RewardScoreEntity fitness = allRewardScores.getFitness();
         RewardScoreEntity power = allRewardScores.getPower();
 
-        double powerValueDouble = (growth.getValue() + strength.getValue()) + HEALTH_FITNESS_MULTIPLIER * (health.getValue() + fitness.getValue()) * (growth.getValue() + strength.getValue());
+        double powerValueDouble = (growth.getValue() + strength.getValue()) + HEALTH_FITNESS_MULTIPLIER * 0.01 * (health.getValue() + fitness.getValue()) * (growth.getValue() + strength.getValue());
         int powerValueInt = (int) Math.round(powerValueDouble);
         RewardScoreLogEntry logEntry = RewardScoreLogEntry.builder()
                 .date(OffsetDateTime.now())

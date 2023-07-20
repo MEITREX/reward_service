@@ -2,15 +2,11 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreLogEntry;
+import de.unistuttgart.iste.gits.reward.persistence.dao.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -57,7 +53,7 @@ class PowerScoreCalculatorTest {
 
         RewardScoreEntity power = powerScoreCalculator.calculateOnContentWorkedOn(rewardScoresEntity, contents,event);
 
-        assertThat(power.getValue(), is(420));
+        assertThat(power.getValue(), is(24));
     }
 
     /**
@@ -81,19 +77,19 @@ class PowerScoreCalculatorTest {
                         ))
                         .build())
         );
-        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(420);
+        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(24);
         rewardScoresEntity.setFitness(initializeRewardScoreEntity());
 
         RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, contents);
 
 
-        assertThat(power.getValue(), is(220));
+        assertThat(power.getValue(), is(22));
         assertThat(power.getLog(), hasSize(1));
 
         RewardScoreLogEntry logEntry = power.getLog().get(0);
-        assertThat(logEntry.getDifference(), is(-200));
-        assertThat(logEntry.getOldValue(), is(420));
-        assertThat(logEntry.getNewValue(), is(220));
+        assertThat(logEntry.getDifference(), is(-2));
+        assertThat(logEntry.getOldValue(), is(24));
+        assertThat(logEntry.getNewValue(), is(22));
         assertThat(logEntry.getReason(), is(RewardChangeReason.COMPOSITE_VALUE));
     }
 
