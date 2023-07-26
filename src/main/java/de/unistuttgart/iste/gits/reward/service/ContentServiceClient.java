@@ -1,18 +1,14 @@
 package de.unistuttgart.iste.gits.reward.service;
 
-import de.unistuttgart.iste.gits.generated.dto.Content;
-import de.unistuttgart.iste.gits.generated.dto.ContentMetadata;
-import de.unistuttgart.iste.gits.generated.dto.MediaContent;
-import de.unistuttgart.iste.gits.generated.dto.UserProgressData;
+import de.unistuttgart.iste.gits.generated.dto.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.graphql.client.GraphQlClient;
 import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Client for the content service, allowing to query contents with user progress data.
@@ -21,6 +17,7 @@ import java.util.UUID;
  * TODO: The error handling is minimal.
  */
 @Component
+@Slf4j
 public class ContentServiceClient {
 
     @Value("${content_service.url}")
@@ -70,6 +67,8 @@ public class ContentServiceClient {
                                 
                 """;
 
+        log.info("Sending query to course service: {}", query.replace("\n", ""));
+
         // we must use media content here because the content type is an interface
         // that cannot be used for deserialization
         List<ContentWithUserProgressData[]> result = graphQlClient.document(query)
@@ -77,6 +76,7 @@ public class ContentServiceClient {
                 .variable("chapterIds", chapterIds)
                 .retrieve("contentsByChapterIds")
                 .toEntityList(ContentWithUserProgressData[].class)
+                .doOnError(e -> log.error("Error while retrieving contents from content service", e))
                 .block();
 
         if (result == null) {

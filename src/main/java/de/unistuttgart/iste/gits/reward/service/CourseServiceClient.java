@@ -7,10 +7,7 @@ import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Client for the course service.
@@ -59,6 +56,7 @@ public class CourseServiceClient {
                 }
                 """;
 
+        log.info("Sending query to course service: {}", query.replace("\n", ""));
         return graphQlClient.document(query)
                 .variable("courseId", courseId)
                 .retrieve("coursesById[0].chapters.elements")
@@ -93,6 +91,7 @@ public class CourseServiceClient {
                 }
                 """;
 
+        log.info("Sending query to course service: {}", query.replace("\n", ""));
         return graphQlClient.document(query)
                 .variable("contentId", contentId)
                 .retrieve("resourceById[0].availableCourses[0]")

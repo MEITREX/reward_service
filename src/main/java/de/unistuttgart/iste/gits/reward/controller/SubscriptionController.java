@@ -6,16 +6,15 @@ import de.unistuttgart.iste.gits.reward.service.RewardService;
 import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class SubscriptionController {
 
     private final RewardService rewardService;
@@ -27,6 +26,7 @@ public class SubscriptionController {
     @PostMapping(path = "/reward-service/user-progress-pubsub")
     public Mono<RewardScores> updateAssociation(@RequestBody(required = false) CloudEvent<UserProgressLogEvent> cloudEvent,
                                                 @RequestHeader Map<String, String> headers) {
+        log.info("Received event: {}", cloudEvent.getData());
         return Mono.fromCallable(() -> rewardService.calculateScoresOnContentWorkedOn(cloudEvent.getData()));
     }
 }
