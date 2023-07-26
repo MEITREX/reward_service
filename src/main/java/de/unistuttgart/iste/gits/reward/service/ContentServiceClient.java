@@ -67,7 +67,7 @@ public class ContentServiceClient {
                                 
                 """;
 
-        log.info("Sending query to course service: {}", query.replace("\n", ""));
+        log.info("Sending contentsByChapterIds query to course service with chapterIds {}", chapterIds);
 
         // we must use media content here because the content type is an interface
         // that cannot be used for deserialization

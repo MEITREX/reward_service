@@ -56,7 +56,7 @@ public class CourseServiceClient {
                 }
                 """;
 
-        log.info("Sending query to course service: {}", query.replace("\n", ""));
+        log.info("Sending coursesById query to course service with courseId {}", courseId);
         return graphQlClient.document(query)
                 .variable("courseId", courseId)
                 .retrieve("coursesById[0].chapters.elements")
@@ -87,11 +87,11 @@ public class CourseServiceClient {
                 query($contentId: UUID!) {
                     resourceById(ids: [$contentId]) {
                         availableCourses
-                    }
+                    }  
                 }
                 """;
 
-        log.info("Sending query to course service: {}", query.replace("\n", ""));
+        log.info("Sending resourceById query to course service with contentId {}", contentId);
         return graphQlClient.document(query)
                 .variable("contentId", contentId)
                 .retrieve("resourceById[0].availableCourses[0]")
