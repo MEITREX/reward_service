@@ -87,7 +87,7 @@ public class CourseServiceClient {
                 query($contentId: UUID!) {
                     resourceById(ids: [$contentId]) {
                         availableCourses
-                    }  
+                    }
                 }
                 """;
 
