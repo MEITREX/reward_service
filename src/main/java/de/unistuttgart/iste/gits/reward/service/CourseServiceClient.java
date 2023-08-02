@@ -13,9 +13,6 @@ import java.util.*;
  * Client for the course service.
  * <p>
  * Can retrieve all chapter ids for a course and the course id for a content id.
- * <p>
- * TODO: The calls to the course service are blocking. We should consider figuring out reactive calls.
- * TODO: The error handling is minimal.
  */
 @Component
 @Slf4j
@@ -76,30 +73,42 @@ public class CourseServiceClient {
      * @return the course id
      */
     public UUID getCourseIdForContent(UUID contentId) {
-        if (contentIdToCourseIdCache.containsKey(contentId)) {
-            return contentIdToCourseIdCache.get(contentId);
-        }
-        WebClient webClient = WebClient.builder().baseUrl(courseServiceUrl).build();
+        try {
+            if (contentIdToCourseIdCache.containsKey(contentId)) {
+                return contentIdToCourseIdCache.get(contentId);
+            }
+            WebClient webClient = WebClient.builder().baseUrl(courseServiceUrl).build();
+            GraphQlClient graphQlClient = HttpGraphQlClient.builder(webClient).build();
 
-        GraphQlClient graphQlClient = HttpGraphQlClient.builder(webClient).build();
-
-        String query = """
-                query($contentId: UUID!) {
-                    resourceById(ids: [$contentId]) {
-                        availableCourses
+            String query = """
+                    query($contentId: UUID!) {
+                        resourceById(ids: [$contentId]) {
+                            availableCourses
+                        }
                     }
-                }
-                """;
+                    """;
 
-        log.info("Sending resourceById query to course service with contentId {}", contentId);
-        return graphQlClient.document(query)
-                .variable("contentId", contentId)
-                .retrieve("resourceById[0].availableCourses[0]")
-                .toEntity(UUID.class)
-                .doOnError(e -> log.error("Error while retrieving course id from course service", e))
-                .retry(RETRY_COUNT)
-                .doOnNext(courseId -> contentIdToCourseIdCache.put(contentId, courseId))
-                .block();
+            log.info("Sending resourceById query to course service with contentId {}", contentId);
+            UUID courseId = graphQlClient.document(query)
+                    .variable("contentId", contentId)
+                    .retrieve("resourceById[0].availableCourses[0]")
+                    .toEntity(UUID.class)
+                    .retry(RETRY_COUNT)
+                    .block();
+
+            if (courseId == null) {
+                throw new CourseServiceConnectionException("Could not retrieve the courseId of content with id "
+                                                           + contentId
+                                                           + ". The course of the content might not be available for the"
+                                                           + " user or the content or course was deleted.", null);
+            }
+
+            contentIdToCourseIdCache.put(contentId, courseId);
+            return courseId;
+
+        } catch (Exception e) {
+            throw new CourseServiceConnectionException("Error while retrieving course id from course service", e);
+        }
     }
 
     /**
@@ -112,5 +121,11 @@ public class CourseServiceClient {
 
     // helper class for deserialization
     private record ChapterWithId(UUID id) {
+    }
+
+    public static class CourseServiceConnectionException extends RuntimeException {
+        public CourseServiceConnectionException(String message, Exception cause) {
+            super(message, cause);
+        }
     }
 }

@@ -2,7 +2,7 @@ package de.unistuttgart.iste.gits.reward.controller;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.RewardScores;
-import de.unistuttgart.iste.gits.reward.service.RewardService;
+import de.unistuttgart.iste.gits.reward.service.*;
 import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +24,15 @@ public class SubscriptionController {
      */
     @Topic(name = "content-progressed", pubsubName = "gits")
     @PostMapping(path = "/reward-service/user-progress-pubsub")
-    public Mono<RewardScores> updateAssociation(@RequestBody(required = false) CloudEvent<UserProgressLogEvent> cloudEvent,
-                                                @RequestHeader Map<String, String> headers) {
+    public Mono<RewardScores> onUserProgress(@RequestBody(required = false) CloudEvent<UserProgressLogEvent> cloudEvent,
+                                             @RequestHeader Map<String, String> headers) {
         log.info("Received event: {}", cloudEvent.getData());
-        return Mono.fromCallable(() -> rewardService.calculateScoresOnContentWorkedOn(cloudEvent.getData()));
+        try {
+            return Mono.fromCallable(() -> rewardService.calculateScoresOnContentWorkedOn(cloudEvent.getData()));
+        } catch (CourseServiceClient.CourseServiceConnectionException |
+                 ContentServiceClient.ContentServiceConnectionException e) {
+            log.error("Error while processing user progress event", e);
+            return Mono.empty();
+        }
     }
 }

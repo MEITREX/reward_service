@@ -12,13 +12,12 @@ import java.util.*;
 
 /**
  * Client for the content service, allowing to query contents with user progress data.
- * <p>
- * TODO: The calls to the content service are blocking. We should consider figuring out reactive calls.
- * TODO: The error handling is minimal.
  */
 @Component
 @Slf4j
 public class ContentServiceClient {
+
+    private static final long RETRY_COUNT = 3;
 
     @Value("${content_service.url}")
     private String contentServiceUrl;
@@ -32,60 +31,64 @@ public class ContentServiceClient {
      */
     public List<Content> getContentsWithUserProgressData(UUID userId,
                                                          List<UUID> chapterIds) {
-        WebClient webClient = WebClient.builder().baseUrl(contentServiceUrl).build();
+        try {
+            WebClient webClient = WebClient.builder().baseUrl(contentServiceUrl).build();
 
-        GraphQlClient graphQlClient = HttpGraphQlClient.builder(webClient).build();
+            GraphQlClient graphQlClient = HttpGraphQlClient.builder(webClient).build();
 
-        String query = """
-                query($userId: UUID!, $chapterIds: [UUID!]!) {
-                    contentsByChapterIds(chapterIds: $chapterIds) {
-                        id
-                        metadata {
-                            name
-                            tagNames
-                            suggestedDate
-                            type
-                            chapterId
-                            rewardPoints
-                        }
-                        progressDataForUser(userId: $userId) {
-                            userId
-                            contentId
-                            learningInterval
-                            nextLearnDate
-                            lastLearnDate
-                            log {
-                                timestamp
-                                success
-                                correctness
-                                hintsUsed
-                                timeToComplete
+            String query = """
+                    query($userId: UUID!, $chapterIds: [UUID!]!) {
+                        contentsByChapterIds(chapterIds: $chapterIds) {
+                            id
+                            metadata {
+                                name
+                                tagNames
+                                suggestedDate
+                                type
+                                chapterId
+                                rewardPoints
+                            }
+                            progressDataForUser(userId: $userId) {
+                                userId
+                                contentId
+                                learningInterval
+                                nextLearnDate
+                                lastLearnDate
+                                log {
+                                    timestamp
+                                    success
+                                    correctness
+                                    hintsUsed
+                                    timeToComplete
+                                }
                             }
                         }
                     }
-                }
-                                
-                """;
+                                    
+                    """;
 
-        log.info("Sending contentsByChapterIds query to course service with chapterIds {}", chapterIds);
+            log.info("Sending contentsByChapterIds query to course service with chapterIds {}", chapterIds);
 
-        // we must use media content here because the content type is an interface
-        // that cannot be used for deserialization
-        List<ContentWithUserProgressData[]> result = graphQlClient.document(query)
-                .variable("userId", userId)
-                .variable("chapterIds", chapterIds)
-                .retrieve("contentsByChapterIds")
-                .toEntityList(ContentWithUserProgressData[].class)
-                .doOnError(e -> log.error("Error while retrieving contents from content service", e))
-                .block();
+            // we must use media content here because the content type is an interface
+            // that cannot be used for deserialization
+            List<ContentWithUserProgressData[]> result = graphQlClient.document(query)
+                    .variable("userId", userId)
+                    .variable("chapterIds", chapterIds)
+                    .retrieve("contentsByChapterIds")
+                    .toEntityList(ContentWithUserProgressData[].class)
+                    .retry(RETRY_COUNT)
+                    .block();
 
-        if (result == null) {
-            return List.of();
+            if (result == null) {
+                return List.of();
+            }
+            return result.stream()
+                    .flatMap(Arrays::stream)
+                    .map(ContentWithUserProgressData::toContent)
+                    .toList();
+        } catch (Exception e) {
+            throw new ContentServiceConnectionException("Error while fetching contents from content service", e);
         }
-        return result.stream()
-                .flatMap(Arrays::stream)
-                .map(ContentWithUserProgressData::toContent)
-                .toList();
     }
 
 
@@ -99,6 +102,12 @@ public class ContentServiceClient {
                     .setMetadata(metadata)
                     .setUserProgressData(progressDataForUser)
                     .build();
+        }
+    }
+
+    public static class ContentServiceConnectionException extends RuntimeException {
+        public ContentServiceConnectionException(String message, Exception e) {
+            super(message, e);
         }
     }
 
