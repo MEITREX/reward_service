@@ -1,11 +1,10 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
-import de.unistuttgart.iste.gits.generated.dto.*;
+import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
 import de.unistuttgart.iste.gits.reward.persistence.dao.*;
 import org.junit.jupiter.api.Test;
 
-import java.time.OffsetDateTime;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,32 +25,17 @@ class PowerScoreCalculatorTest {
      */
     @Test
     void calculateOnContentWorkedOnPowerScore() {
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
-                createContentWithUserData(contentId, UserProgressData.builder()
-                        .setNextLearnDate(OffsetDateTime.now())
-                        .setLog(List.of(
-                                ProgressLogItem.builder()
-                                        .setTimestamp(OffsetDateTime.now())
-                                        .setCorrectness(1)
-                                        .setSuccess(true)
-                                        .setHintsUsed(0)
-                                        .build()
-                        ))
-                        .build())
-        );
-
         UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
-                .contentId(contentId)
+                .contentId(UUID.randomUUID())
                 .correctness(1)
                 .hintsUsed(0)
                 .success(true)
                 .build();
+
         AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(0);
 
-
-        RewardScoreEntity power = powerScoreCalculator.calculateOnContentWorkedOn(rewardScoresEntity, contents,event);
+        RewardScoreEntity power = powerScoreCalculator.calculateOnContentWorkedOn(rewardScoresEntity, List.of(), event);
 
         assertThat(power.getValue(), is(24));
     }
@@ -63,24 +47,10 @@ class PowerScoreCalculatorTest {
      */
     @Test
     void powerDecreasesWhenFitnessDecreases() {
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
-                createContentWithUserData(contentId, UserProgressData.builder()
-                        .setNextLearnDate(OffsetDateTime.now())
-                        .setLog(List.of(
-                                ProgressLogItem.builder()
-                                        .setTimestamp(OffsetDateTime.now())
-                                        .setCorrectness(1)
-                                        .setSuccess(true)
-                                        .setHintsUsed(0)
-                                        .build()
-                        ))
-                        .build())
-        );
         AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(24);
-        rewardScoresEntity.setFitness(initializeRewardScoreEntity());
+        rewardScoresEntity.setFitness(initializeRewardScoreEntity(0));
 
-        RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, contents);
+        RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, List.of());
 
 
         assertThat(power.getValue(), is(22));
@@ -93,14 +63,20 @@ class PowerScoreCalculatorTest {
         assertThat(logEntry.getReason(), is(RewardChangeReason.COMPOSITE_VALUE));
     }
 
+    /**
+     * Given no change in power
+     * When recalculateScore is called
+     * Then no log entry is added
+     */
+    @Test
+    void noLogEntryOnNoDifference() {
+        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(24);
 
-    private Content createContentWithUserData(UUID contentId, UserProgressData userProgressData) {
-        return FlashcardSetAssessment.builder()
-                .setId(contentId)
-                .setMetadata(ContentMetadata.builder().build())
-                .setAssessmentMetadata(AssessmentMetadata.builder().build())
-                .setUserProgressData(userProgressData)
-                .build();
+        RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, List.of());
+
+
+        assertThat(power.getValue(), is(24));
+        assertThat(power.getLog(), hasSize(0));
     }
 
     private AllRewardScoresEntity createAllRewardScoresEntityWithPower(int power) {
@@ -113,9 +89,9 @@ class PowerScoreCalculatorTest {
                 .build();
     }
 
-    private static RewardScoreEntity initializeRewardScoreEntity() {
+    private static RewardScoreEntity initializeRewardScoreEntity(int value) {
         RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
-        rewardScoreEntity.setValue(0);
+        rewardScoreEntity.setValue(value);
         rewardScoreEntity.setLog(new ArrayList<>());
         return rewardScoreEntity;
     }

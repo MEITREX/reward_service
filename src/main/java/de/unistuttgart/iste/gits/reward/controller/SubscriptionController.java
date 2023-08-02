@@ -27,12 +27,14 @@ public class SubscriptionController {
     public Mono<RewardScores> onUserProgress(@RequestBody(required = false) CloudEvent<UserProgressLogEvent> cloudEvent,
                                              @RequestHeader Map<String, String> headers) {
         log.info("Received event: {}", cloudEvent.getData());
-        try {
-            return Mono.fromCallable(() -> rewardService.calculateScoresOnContentWorkedOn(cloudEvent.getData()));
-        } catch (CourseServiceClient.CourseServiceConnectionException |
-                 ContentServiceClient.ContentServiceConnectionException e) {
-            log.error("Error while processing user progress event", e);
-            return Mono.empty();
-        }
+        return Mono.fromCallable(() -> {
+            try {
+                return rewardService.calculateScoresOnContentWorkedOn(cloudEvent.getData());
+            } catch (CourseServiceClient.CourseServiceConnectionException |
+                     ContentServiceClient.ContentServiceConnectionException e) {
+                log.error("Error while processing user progress event", e);
+                return null;
+            }
+        });
     }
 }

@@ -34,9 +34,15 @@ public class PowerScoreCalculator implements ScoreCalculator {
 
         double powerValueDouble = (growth.getValue() + strength.getValue()) + HEALTH_FITNESS_MULTIPLIER * 0.01 * (health.getValue() + fitness.getValue()) * (growth.getValue() + strength.getValue());
         int powerValueInt = (int) Math.round(powerValueDouble);
+
+        int difference = powerValueInt - power.getValue();
+        if (difference == 0) {
+            return power;
+        }
+
         RewardScoreLogEntry logEntry = RewardScoreLogEntry.builder()
                 .date(OffsetDateTime.now())
-                .difference(powerValueInt - power.getValue())
+                .difference(difference)
                 .oldValue(power.getValue())
                 .newValue(powerValueInt)
                 .reason(RewardChangeReason.COMPOSITE_VALUE)
