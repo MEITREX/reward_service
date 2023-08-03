@@ -1,19 +1,14 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
-import de.unistuttgart.iste.gits.generated.dto.Content;
-import de.unistuttgart.iste.gits.generated.dto.ProgressLogItem;
-import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
-import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreLogEntry;
+import de.unistuttgart.iste.gits.generated.dto.*;
+import de.unistuttgart.iste.gits.reward.persistence.dao.*;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 public class FitnessScoreCalculator implements ScoreCalculator {
@@ -53,8 +48,14 @@ public class FitnessScoreCalculator implements ScoreCalculator {
         Content content = getContentOfEvent(contents, event);
         List<Content> contentsDueForReview = getContentsToRepeat(contents);
 
-        ProgressLogItem latestReview = getLatestReviewExcludingTriggerOfEvent(content);
-        double correctnessBefore = latestReview.getCorrectness();
+        Optional<ProgressLogItem> latestReview = getLatestReviewExcludingTriggerOfEvent(content);
+        if (latestReview.isEmpty()) {
+            // it is the first review of the content, so only health score is affected
+            return fitnessScoreBefore;
+        }
+
+        ProgressLogItem latestReviewItem = latestReview.get();
+        double correctnessBefore = latestReviewItem.getCorrectness();
         double correctnessAfter = event.getCorrectness();
 
         double fitnessRegen = calculateFitnessRegeneration(fitnessScoreBefore.getValue(), contentsDueForReview.size(),
@@ -62,7 +63,7 @@ public class FitnessScoreCalculator implements ScoreCalculator {
 
         if (fitnessRegen == 0
             || !event.isSuccess()
-            || wasAlreadyLearnedToday(latestReview)
+            || wasAlreadyLearnedToday(latestReviewItem)
         ) {
             // no change in fitness score or content was not reviewed successfully
             // or content was already learned today
@@ -169,14 +170,13 @@ public class FitnessScoreCalculator implements ScoreCalculator {
                 .orElseThrow();
     }
 
-    private ProgressLogItem getLatestReviewExcludingTriggerOfEvent(Content content) {
+    private Optional<ProgressLogItem> getLatestReviewExcludingTriggerOfEvent(Content content) {
         return content.getUserProgressData()
                 .getLog()
                 .stream()
                 // make sure that the latest review is not the one that triggered the event
                 .filter(logItem -> Duration.between(logItem.getTimestamp(), OffsetDateTime.now()).toMinutes() > 5)
-                .findFirst()
-                .orElseThrow();
+                .findFirst();
     }
 
     private double calculateFitnessRegeneration(double fitness, int contentsToRepeat, double correctnessBefore, double correctnessAfter) {

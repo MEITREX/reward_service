@@ -1,9 +1,7 @@
 package de.unistuttgart.iste.gits.reward.service;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
-import de.unistuttgart.iste.gits.generated.dto.Content;
-import de.unistuttgart.iste.gits.generated.dto.RewardScores;
-import de.unistuttgart.iste.gits.generated.dto.ScoreboardItem;
+import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
 import de.unistuttgart.iste.gits.reward.persistence.mapper.RewardScoreMapper;
@@ -50,16 +48,20 @@ public class RewardService {
 
         List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
 
-        allRewardScoresEntity
-                .setHealth(healthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-        allRewardScoresEntity
-                .setFitness(fitnessScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-        allRewardScoresEntity
-                .setStrength(strengthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-        allRewardScoresEntity
-                .setPower(powerScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-        allRewardScoresEntity
-                .setGrowth(growthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+        try {
+            allRewardScoresEntity
+                    .setHealth(healthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+            allRewardScoresEntity
+                    .setFitness(fitnessScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+            allRewardScoresEntity
+                    .setStrength(strengthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+            allRewardScoresEntity
+                    .setPower(powerScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+            allRewardScoresEntity
+                    .setGrowth(growthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+        } catch (Exception e) {
+            throw new RewardScoreCalculationException("Could not recalculate reward scores", e);
+        }
 
         var result = rewardScoresRepository.save(allRewardScoresEntity);
 
@@ -109,16 +111,20 @@ public class RewardService {
         List<Content> contents
                 = contentServiceClient.getContentsWithUserProgressData(event.getUserId(), chapterIds);
 
-        allRewardScoresEntity.setHealth(healthScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-        allRewardScoresEntity.setFitness(fitnessScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-        allRewardScoresEntity.setStrength(strengthScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-        allRewardScoresEntity.setPower(powerScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-        allRewardScoresEntity.setGrowth(growthScoreCalculator
-                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+        try {
+            allRewardScoresEntity.setHealth(healthScoreCalculator
+                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+            allRewardScoresEntity.setFitness(fitnessScoreCalculator
+                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+            allRewardScoresEntity.setStrength(strengthScoreCalculator
+                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+            allRewardScoresEntity.setPower(powerScoreCalculator
+                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+            allRewardScoresEntity.setGrowth(growthScoreCalculator
+                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+        } catch (Exception e) {
+            throw new RewardScoreCalculationException("Error while calculating fitness score", e);
+        }
 
         allRewardScoresEntity = rewardScoresRepository.save(allRewardScoresEntity);
 
