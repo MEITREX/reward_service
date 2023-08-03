@@ -56,9 +56,9 @@ public class RewardService {
             allRewardScoresEntity
                     .setStrength(strengthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
             allRewardScoresEntity
-                    .setPower(powerScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-            allRewardScoresEntity
                     .setGrowth(growthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+            allRewardScoresEntity
+                    .setPower(powerScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
         } catch (Exception e) {
             throw new RewardScoreCalculationException("Could not recalculate reward scores", e);
         }
@@ -118,9 +118,9 @@ public class RewardService {
                     .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
             allRewardScoresEntity.setStrength(strengthScoreCalculator
                     .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-            allRewardScoresEntity.setPower(powerScoreCalculator
-                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
             allRewardScoresEntity.setGrowth(growthScoreCalculator
+                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+            allRewardScoresEntity.setPower(powerScoreCalculator
                     .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
         } catch (Exception e) {
             throw new RewardScoreCalculationException("Error while calculating fitness score", e);
