@@ -43,7 +43,7 @@ public class CourseServiceClient {
 
         String query = """
                 query($courseId: UUID!) {
-                    coursesById(ids: [$courseId]) {
+                    coursesByIds(ids: [$courseId]) {
                         chapters {
                             elements {
                                 id
@@ -56,7 +56,7 @@ public class CourseServiceClient {
         log.info("Sending coursesById query to course service with courseId {}", courseId);
         return graphQlClient.document(query)
                 .variable("courseId", courseId)
-                .retrieve("coursesById[0].chapters.elements")
+                .retrieve("coursesByIds[0].chapters.elements")
                 .toEntityList(ChapterWithId.class)
                 .doOnError(e -> log.error("Error while retrieving chapter ids from course service", e))
                 .retry(RETRY_COUNT)
