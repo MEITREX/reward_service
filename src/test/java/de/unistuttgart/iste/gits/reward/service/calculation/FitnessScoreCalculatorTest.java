@@ -2,15 +2,11 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreLogEntry;
+import de.unistuttgart.iste.gits.reward.persistence.dao.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -198,6 +194,34 @@ class FitnessScoreCalculatorTest {
     }
 
     /**
+     * Given the fitness score is 0
+     * When recalculateScore is called
+     * Then the fitness score is not changed and no log entry is added
+     */
+    @Test
+    void testRecalculateNotGoingBelow0() {
+        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(0);
+        UUID contentId = UUID.randomUUID();
+        List<Content> contents = List.of(
+                createContentWithUserData(contentId, UserProgressData.builder()
+                        .setNextLearnDate(OffsetDateTime.now())
+                        .setLog(List.of(
+                                ProgressLogItem.builder()
+                                        .setTimestamp(OffsetDateTime.now())
+                                        .setCorrectness(1)
+                                        .setSuccess(true)
+                                        .setHintsUsed(0)
+                                        .build()
+                        ))
+                        .build())
+        );
+
+        RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
+        assertThat(fitness.getValue(), is(0));
+        assertThat(fitness.getLog(), hasSize(0));
+    }
+
+    /**
      * Given 2 contents are due for repetition and one of them gets repeated successfully
      * When calculateOnContentWorkedOn is called
      * Then the fitness score is increased and a log entry is added
@@ -245,6 +269,49 @@ class FitnessScoreCalculatorTest {
         assertThat(logItem.getAssociatedContentIds(), contains(contentId));
         assertThat(logItem.getOldValue(), is(50));
         assertThat(logItem.getNewValue(), is(75));
+    }
+
+    /**
+     * Given the fitness score is 100
+     * When calculateOnContentWorkedOn is called
+     * Then the fitness score is not changed and no log entry is added
+     */
+    @Test
+    void testCalculateOnContentWorkedOnNotExceeding100() {
+        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
+        UUID contentId = UUID.randomUUID();
+        List<Content> contents = List.of(
+                createContentWithUserData(contentId, UserProgressData.builder()
+                        .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setLog(logWithOneSuccessfulEntry()) // learned successfully
+                        .build()),
+                createContentWithUserData(UserProgressData.builder()
+                        .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setLog(logWithOneSuccessfulEntry())
+                        .build()),
+                createContentWithUserData(
+                        UserProgressData.builder()
+                                .setLog(List.of(ProgressLogItem.builder()
+                                        .setTimestamp(OffsetDateTime.now().minusDays(3))
+                                        .setCorrectness(0)
+                                        .setSuccess(false)
+                                        .setHintsUsed(0)
+                                        .build())) // not learned successfully yet
+                                .build())
+        );
+        UserProgressLogEvent event = UserProgressLogEvent.builder()
+                .userId(UUID.randomUUID())
+                .contentId(contentId)
+                .correctness(1)
+                .hintsUsed(0)
+                .success(true)
+                .build();
+
+        RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+
+        // should not change as no content is due for repetition
+        assertThat(fitness.getValue(), is(100));
+        assertThat(fitness.getLog(), hasSize(0));
     }
 
     /**

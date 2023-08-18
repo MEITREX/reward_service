@@ -2,15 +2,11 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreLogEntry;
+import de.unistuttgart.iste.gits.reward.persistence.dao.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -44,6 +40,33 @@ class HealthScoreCalculatorTest {
         assertThat(logEntry.getAssociatedContentIds(), contains(contentId));
         assertThat(logEntry.getOldValue(), is(100));
         assertThat(logEntry.getNewValue(), is(99));
+    }
+
+    /**
+     * Given the health score is 1 and a content is due for repetition
+     * When recalculateScore is called
+     * Then the health score is decreased by 1 and a log entry is added
+     */
+    @Test
+    void testRecalculateScoreNotBelow0() {
+        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithHealthOf(1);
+        UUID contentId = UUID.randomUUID();
+        UserProgressData userProgressData = UserProgressData.builder().build();
+        List<Content> contents = List.of(
+                createContentWithUserData(contentId, userProgressData, 100)
+        );
+
+        RewardScoreEntity health = healthScoreCalculator.recalculateScore(rewardScoresEntity, contents);
+
+        assertThat(health.getValue(), is(0));
+        assertThat(health.getLog(), hasSize(1));
+
+        RewardScoreLogEntry logEntry = health.getLog().get(0);
+        assertThat(logEntry.getDifference(), is(-1));
+        assertThat(logEntry.getReason(), is(RewardChangeReason.CONTENT_DUE_FOR_LEARNING));
+        assertThat(logEntry.getAssociatedContentIds(), contains(contentId));
+        assertThat(logEntry.getOldValue(), is(1));
+        assertThat(logEntry.getNewValue(), is(0));
     }
 
     /**
@@ -136,7 +159,32 @@ class HealthScoreCalculatorTest {
         assertThat(logItem.getNewValue(), is(100));
     }
 
+    /**
+     * Given the health score is 100
+     * When calculateOnContentWorkedOn is called
+     * Then the health score is not changed and no log entry is added
+     */
+    @Test
+    void calculateOnContentWorkedOnNotExceeding100() {
+        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
+        UUID contentId = UUID.randomUUID();
+        List<Content> contents = List.of(
+                createContentWithUserData(contentId, UserProgressData.builder().build(), 1)
+        );
+        UserProgressLogEvent event = UserProgressLogEvent.builder()
+                .userId(UUID.randomUUID())
+                .contentId(contentId)
+                .correctness(1)
+                .hintsUsed(0)
+                .success(true)
+                .build();
 
+        RewardScoreEntity health = healthScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+
+        // should be 100 due to no contents being due
+        assertThat(health.getValue(), is(100));
+        assertThat(health.getLog(), hasSize(0));
+    }
 
     /**
      * Given no contents exist

@@ -26,21 +26,22 @@ public class HealthScoreCalculator implements ScoreCalculator {
         List<Content> newDueContents = getDueContentsThatWereNeverWorked(contents, today);
 
         int diff = calculateHealthDecrease(newDueContents, today);
+        int newValue = Math.max(0, oldScore - diff);
 
-        if (diff == 0) {
+        if (newValue - oldScore == 0) {
             return rewardScore;
         }
 
         RewardScoreLogEntry logEntry = RewardScoreLogEntry.builder()
                 .date(today)
-                .difference(-diff)
-                .newValue(oldScore - diff)
+                .difference(newValue - oldScore)
+                .newValue(newValue)
                 .oldValue(oldScore)
                 .reason(RewardChangeReason.CONTENT_DUE_FOR_LEARNING)
                 .associatedContentIds(getIds(newDueContents))
                 .build();
 
-        rewardScore.setValue(oldScore - diff);
+        rewardScore.setValue(newValue);
         rewardScore.getLog().add(logEntry);
 
         return rewardScore;
@@ -64,8 +65,8 @@ public class HealthScoreCalculator implements ScoreCalculator {
 
         List<Content> newDueContents = getDueContentsThatWereNeverWorked(contents, today);
         int numberOfNewDueContentsBefore = newDueContents.size();
-        // this list might or might not include the content that was just worked on
-        // depending on if the content service has already processed the event or not
+
+        // just in case that the content list does not contain the content of the event
         if (!doesListContainContentWithId(newDueContents, event.getContentId())) {
             numberOfNewDueContentsBefore++;
         }
@@ -75,7 +76,7 @@ public class HealthScoreCalculator implements ScoreCalculator {
 
         RewardScoreLogEntry logEntry = RewardScoreLogEntry.builder()
                 .date(today)
-                .difference(healthIncrease)
+                .difference(newValue - oldScore)
                 .newValue(newValue)
                 .oldValue(oldScore)
                 .reason(RewardChangeReason.CONTENT_DONE)

@@ -19,10 +19,10 @@ public class FitnessScoreCalculator implements ScoreCalculator {
         RewardScoreEntity fitnessScoreBefore = allRewardScores.getFitness();
 
         double fitnessDecrease = calculateFitnessDecrease(contents);
-        double newFitnessScore = fitnessScoreBefore.getValue() - fitnessDecrease;
+        double newFitnessScore = Math.max(0.0, fitnessScoreBefore.getValue() - fitnessDecrease);
         int intNewFitnessScore = (int) Math.round(newFitnessScore);
 
-        if (fitnessDecrease == 0) {
+        if (intNewFitnessScore - fitnessScoreBefore.getValue() == 0) {
             return fitnessScoreBefore;
         }
 
@@ -70,7 +70,7 @@ public class FitnessScoreCalculator implements ScoreCalculator {
             return fitnessScoreBefore;
         }
 
-        double updatedFitnessScore = fitnessScoreBefore.getValue() + fitnessRegen;
+        double updatedFitnessScore = Math.min(100.0, fitnessScoreBefore.getValue() + fitnessRegen);
         int intUpdatedFitnessScore = (int) Math.round(updatedFitnessScore);
 
         if (!isDueForRepetition(content)) {
