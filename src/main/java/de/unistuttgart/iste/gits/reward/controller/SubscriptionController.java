@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.gits.reward.controller;
 
+import de.unistuttgart.iste.gits.common.event.CourseChangeEvent;
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.RewardScores;
 import de.unistuttgart.iste.gits.reward.service.*;
@@ -38,5 +39,19 @@ public class SubscriptionController {
                 return null;
             }
         });
+    }
+
+    @Topic(name = "course-changes", pubsubName = "gits")
+    @PostMapping(path = "/reward-service/course-changes-pubsub")
+    public Mono<Void> updateAssociation(@RequestBody CloudEvent<CourseChangeEvent> cloudEvent, @RequestHeader Map<String, String> headers){
+
+        return Mono.fromRunnable(
+                () -> {
+                    try {
+                        rewardService.removeRewardData(cloudEvent.getData());
+                    } catch (NullPointerException e) {
+                        log.error(e.getMessage());
+                    }
+                });
     }
 }

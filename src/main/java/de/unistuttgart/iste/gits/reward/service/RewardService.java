@@ -1,5 +1,7 @@
 package de.unistuttgart.iste.gits.reward.service;
 
+import de.unistuttgart.iste.gits.common.event.CourseChangeEvent;
+import de.unistuttgart.iste.gits.common.event.CrudOperation;
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
@@ -167,5 +169,27 @@ public class RewardService {
         return scoreboard.stream()
                 .sorted(Comparator.comparing(ScoreboardItem::getPowerScore).reversed())
                 .toList();
+    }
+
+    /**
+     * Method that receives Course Change Event and handles DELETE events.
+     * All reward data is then deleted that is connected to deleted course
+     * @param changeEvent a Course Change Event received over dapr
+     */
+    public void removeRewardData(CourseChangeEvent changeEvent){
+
+        // evaluate course Update message
+        if (changeEvent.getCourseId() == null || changeEvent.getOperation() == null){
+            throw new NullPointerException("incomplete message received: all fields of a message must be non-null");
+        }
+        //only consider DELETE events
+        if (!changeEvent.getOperation().equals(CrudOperation.DELETE)){
+            return;
+        }
+
+        List<AllRewardScoresEntity> entitiesToBeDeleted = rewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(changeEvent.getCourseId());
+
+        rewardScoresRepository.deleteAllInBatch(entitiesToBeDeleted);
+
     }
 }
