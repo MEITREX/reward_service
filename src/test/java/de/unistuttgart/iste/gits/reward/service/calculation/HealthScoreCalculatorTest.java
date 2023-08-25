@@ -240,5 +240,19 @@ class HealthScoreCalculatorTest {
                 .power(RewardScoreEntity.builder().value(0).build())
                 .build();
     }
+    @Test
+    void testCalculateInitialHealthValueForNewEntity() {
+        // Create a list of contents with different overdue days
+        List<Content> contents = new ArrayList<>();
+        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 1));
+        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 5));
+        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 10));
 
+        // Calculate the initial health value using the method
+        int initialHealthValue = healthScoreCalculator.calculateInitialHealthValueForNewEntity(contents);
+
+        // Calculate expected initial health value based on your logic
+        int expectedInitialHealthValue = 91;
+        assertThat(initialHealthValue, is(expectedInitialHealthValue));
+    }
 }

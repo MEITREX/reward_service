@@ -136,7 +136,20 @@ public class RewardService {
     public AllRewardScoresEntity initializeRewardScores(UUID courseId, UUID userId) {
         AllRewardScoresEntity allRewardScoresEntity = new AllRewardScoresEntity();
         allRewardScoresEntity.setId(new AllRewardScoresEntity.PrimaryKey(courseId, userId));
-        allRewardScoresEntity.setHealth(initializeRewardScoreEntity(100));
+
+        try {
+            List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
+            List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
+            // Calculate the initial health value for the new entity
+            int initialHealthValue = healthScoreCalculator.calculateInitialHealthValueForNewEntity(contents);
+            allRewardScoresEntity.setHealth(initializeRewardScoreEntity(initialHealthValue));
+        } catch (CourseServiceClient.CourseServiceConnectionException |
+                 ContentServiceClient.ContentServiceConnectionException e) {
+            // Handle exceptions by falling back to default values
+            allRewardScoresEntity.setHealth(initializeRewardScoreEntity(100));
+            //  log the exception for debugging or further analysis
+            log.error("An error occurred while initializing reward scores:", e);
+        }
         allRewardScoresEntity.setStrength(initializeRewardScoreEntity(0));
         allRewardScoresEntity.setFitness(initializeRewardScoreEntity(100));
         allRewardScoresEntity.setGrowth(initializeRewardScoreEntity(0));
