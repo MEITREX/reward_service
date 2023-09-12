@@ -1,20 +1,15 @@
 package de.unistuttgart.iste.gits.reward.service;
 
-import de.unistuttgart.iste.gits.common.event.CourseChangeEvent;
-import de.unistuttgart.iste.gits.common.event.CrudOperation;
-import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
+import de.unistuttgart.iste.gits.common.event.*;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
 import de.unistuttgart.iste.gits.reward.persistence.mapper.RewardScoreMapper;
 import de.unistuttgart.iste.gits.reward.persistence.repository.AllRewardScoresRepository;
 import de.unistuttgart.iste.gits.reward.service.calculation.*;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

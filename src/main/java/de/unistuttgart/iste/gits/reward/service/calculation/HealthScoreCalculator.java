@@ -1,8 +1,9 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
-import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.dao.*;
+import de.unistuttgart.iste.gits.generated.dto.Content;
+import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
+import de.unistuttgart.iste.gits.reward.persistence.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -119,16 +120,13 @@ public class HealthScoreCalculator implements ScoreCalculator {
 
     private List<Content> getDueContentsThatWereNeverWorked(List<Content> contents, OffsetDateTime today) {
         return contents.stream()
-                .filter(this::isContentNotWorkedOn)
+                .filter(this::isContentNew)
                 .filter(content -> isContentDue(content, today))
                 .toList();
     }
 
-    private boolean isContentNotWorkedOn(Content content) {
-        if (content.getUserProgressData().getLog() == null) {
-            return true;
-        }
-        return content.getUserProgressData().getLog().stream().noneMatch(ProgressLogItem::getSuccess);
+    private boolean isContentNew(Content content) {
+        return !content.getUserProgressData().getIsLearned();
     }
 
     private boolean isContentDue(Content content, OffsetDateTime today) {

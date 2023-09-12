@@ -1,14 +1,9 @@
-package de.unistuttgart.iste.gits.reward.persistence.dao;
+package de.unistuttgart.iste.gits.reward.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity(name = "RewardScore")
 @Data

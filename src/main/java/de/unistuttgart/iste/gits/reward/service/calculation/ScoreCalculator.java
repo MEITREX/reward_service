@@ -2,8 +2,8 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
-import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
 
 import java.util.List;
 

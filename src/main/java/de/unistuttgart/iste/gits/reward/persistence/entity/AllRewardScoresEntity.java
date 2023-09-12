@@ -1,10 +1,7 @@
-package de.unistuttgart.iste.gits.reward.persistence.dao;
+package de.unistuttgart.iste.gits.reward.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -20,18 +17,23 @@ public class AllRewardScoresEntity {
 
     @EmbeddedId
     private PrimaryKey id;
+
     @OneToOne(optional = false, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private RewardScoreEntity health;
+
     @OneToOne(optional = false, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private RewardScoreEntity fitness;
+
     @OneToOne(optional = false, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private RewardScoreEntity growth;
+
     @OneToOne(optional = false, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private RewardScoreEntity strength;
+
     @OneToOne(optional = false, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private RewardScoreEntity power;

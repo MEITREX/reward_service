@@ -2,7 +2,7 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.dao.*;
+import de.unistuttgart.iste.gits.reward.persistence.entity.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;

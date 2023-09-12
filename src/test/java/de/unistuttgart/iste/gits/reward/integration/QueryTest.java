@@ -2,8 +2,8 @@ package de.unistuttgart.iste.gits.reward.integration;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.generated.dto.ScoreboardItem;
-import de.unistuttgart.iste.gits.reward.persistence.dao.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.dao.RewardScoreEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
 import de.unistuttgart.iste.gits.reward.persistence.repository.AllRewardScoresRepository;
 import de.unistuttgart.iste.gits.reward.service.CourseServiceClient;
 import de.unistuttgart.iste.gits.reward.service.RewardService;

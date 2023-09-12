@@ -2,7 +2,7 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.dao.*;
+import de.unistuttgart.iste.gits.reward.persistence.entity.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
@@ -29,6 +29,8 @@ class FitnessScoreCalculatorTest {
         UUID contentId = UUID.randomUUID();
         List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
+                        .setIsDueForReview(true)
+                        .setIsLearned(true)
                         .setNextLearnDate(OffsetDateTime.now())
                         .setLog(List.of(
                                 ProgressLogItem.builder()
@@ -67,6 +69,8 @@ class FitnessScoreCalculatorTest {
                 createContentWithUserData(contentId,
                         UserProgressData.builder()
                                 .setNextLearnDate(OffsetDateTime.now().minusDays(10))
+                                .setIsDueForReview(true)
+                                .setIsLearned(true)
                                 .setLog(List.of(
                                         ProgressLogItem.builder()
                                                 .setTimestamp(OffsetDateTime.now())
@@ -118,35 +122,16 @@ class FitnessScoreCalculatorTest {
         List<Content> contents = List.of(
                 createContentWithUserData(
                         UserProgressData.builder()
+                                .setIsDueForReview(false)
+                                .setIsLearned(true)
                                 .setNextLearnDate(OffsetDateTime.now().plusDays(1))
                                 .setLog(logWithOneSuccessfulEntry())
                                 .build()),
                 createContentWithUserData(
                         UserProgressData.builder()
+                                .setIsDueForReview(false)
+                                .setIsLearned(true)
                                 .setNextLearnDate(OffsetDateTime.now().plusDays(3))
-                                .setLog(logWithOneSuccessfulEntry())
-                                .build())
-        );
-
-        RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
-
-        // should not change as no content is due for repetition
-        assertThat(fitness.getValue(), is(100));
-        assertThat(fitness.getLog(), is(empty()));
-    }
-
-    /**
-     * Given a content without a repetition date
-     * When recalculateScore is called
-     * Then the fitness score is not changed and no log entry is added
-     */
-    @Test
-    void testRecalculateScoresWithContentThatHasNoRepetitionDate() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
-        List<Content> contents = List.of(
-                createContentWithUserData(
-                        UserProgressData.builder()
-                                .setNextLearnDate(null) // no repetition date, e.g. media content
                                 .setLog(logWithOneSuccessfulEntry())
                                 .build())
         );
@@ -172,17 +157,12 @@ class FitnessScoreCalculatorTest {
                 createContentWithUserData(
                         UserProgressData.builder()
                                 .setNextLearnDate(OffsetDateTime.now().minusDays(1))
-                                .setLog(List.of()) // not learned yet
+                                .setIsLearned(false)
                                 .build()),
                 createContentWithUserData(
                         UserProgressData.builder()
                                 .setNextLearnDate(OffsetDateTime.now().minusDays(3))
-                                .setLog(List.of(ProgressLogItem.builder()
-                                        .setTimestamp(OffsetDateTime.now().minusDays(3))
-                                        .setCorrectness(0)
-                                        .setSuccess(false)
-                                        .setHintsUsed(0)
-                                        .build())) // not learned successfully yet
+                                .setIsLearned(false)
                                 .build())
         );
 
@@ -205,6 +185,8 @@ class FitnessScoreCalculatorTest {
         List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now())
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(List.of(
                                 ProgressLogItem.builder()
                                         .setTimestamp(OffsetDateTime.now())
@@ -233,10 +215,14 @@ class FitnessScoreCalculatorTest {
         List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(logWithOneSuccessfulEntry()) // learned successfully
                         .build()),
                 createContentWithUserData(UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(logWithOneSuccessfulEntry())
                         .build()),
                 createContentWithUserData(
@@ -283,14 +269,20 @@ class FitnessScoreCalculatorTest {
         List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(logWithOneSuccessfulEntry()) // learned successfully
                         .build()),
                 createContentWithUserData(UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(logWithOneSuccessfulEntry())
                         .build()),
                 createContentWithUserData(
                         UserProgressData.builder()
+                                .setIsLearned(true)
+                                .setIsDueForReview(true)
                                 .setLog(List.of(ProgressLogItem.builder()
                                         .setTimestamp(OffsetDateTime.now().minusDays(3))
                                         .setCorrectness(0)
@@ -326,10 +318,14 @@ class FitnessScoreCalculatorTest {
         List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(logWithOneSuccessfulEntry()) // learned successfully
                         .build()),
                 createContentWithUserData(UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
@@ -360,10 +356,14 @@ class FitnessScoreCalculatorTest {
         List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().plusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(false)
                         .setLog(logWithOneSuccessfulEntry()) // learned successfully
                         .build()),
                 createContentWithUserData(UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().plusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(false)
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
@@ -401,6 +401,8 @@ class FitnessScoreCalculatorTest {
                 // one content that was learned 10 minutes ago
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(List.of(ProgressLogItem.builder()
                                 .setTimestamp(OffsetDateTime.now().minusMinutes(10))
                                 .setSuccess(true)
@@ -408,6 +410,8 @@ class FitnessScoreCalculatorTest {
                         .build()),
                 createContentWithUserData(UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
@@ -436,6 +440,8 @@ class FitnessScoreCalculatorTest {
         UUID contentId = UUID.randomUUID();
         List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
                         .setLog(List.of(
                                 ProgressLogItem.builder()
@@ -447,6 +453,8 @@ class FitnessScoreCalculatorTest {
                         .build()),
                 createContentWithUserData(UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
+                        .setIsLearned(true)
+                        .setIsDueForReview(true)
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );

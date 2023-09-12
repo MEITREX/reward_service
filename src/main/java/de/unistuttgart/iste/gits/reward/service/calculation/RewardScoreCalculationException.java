@@ -5,10 +5,6 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
  */
 public class RewardScoreCalculationException extends RuntimeException {
 
-    public RewardScoreCalculationException(String message) {
-        super(message);
-    }
-
     public RewardScoreCalculationException(String message, Throwable cause) {
         super(message, cause);
     }

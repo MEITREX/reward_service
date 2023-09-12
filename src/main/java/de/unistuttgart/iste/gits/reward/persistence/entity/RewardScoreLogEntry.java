@@ -1,11 +1,8 @@
-package de.unistuttgart.iste.gits.reward.persistence.dao;
+package de.unistuttgart.iste.gits.reward.persistence.entity;
 
 import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.OffsetDateTime;
 import java.util.List;

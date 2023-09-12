@@ -2,7 +2,7 @@ package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.dao.*;
+import de.unistuttgart.iste.gits.reward.persistence.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -10,6 +10,10 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+/**
+ * Calculates the fitness score of a user, according the concept documented
+ * <a href="https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/Scoring%20System.html#fitness">here</a>.
+ */
 @Component
 public class FitnessScoreCalculator implements ScoreCalculator {
     private static final double MAX_DECREASE_PER_DAY = 20;
@@ -20,22 +24,23 @@ public class FitnessScoreCalculator implements ScoreCalculator {
 
         double fitnessDecrease = calculateFitnessDecrease(contents);
         double newFitnessScore = Math.max(0.0, fitnessScoreBefore.getValue() - fitnessDecrease);
-        int intNewFitnessScore = (int) Math.round(newFitnessScore);
+        int newFitnessRounded = (int) Math.round(newFitnessScore);
 
-        if (intNewFitnessScore - fitnessScoreBefore.getValue() == 0) {
+        if (newFitnessRounded - fitnessScoreBefore.getValue() == 0) {
+            // no change in fitness score, so no log entry is created
             return fitnessScoreBefore;
         }
 
         RewardScoreLogEntry logEntry = RewardScoreLogEntry.builder()
                 .date(OffsetDateTime.now())
-                .difference(intNewFitnessScore - fitnessScoreBefore.getValue())
+                .difference(newFitnessRounded - fitnessScoreBefore.getValue())
                 .oldValue(fitnessScoreBefore.getValue())
-                .newValue(intNewFitnessScore)
+                .newValue(newFitnessRounded)
                 .reason(RewardChangeReason.CONTENT_DUE_FOR_REPETITION)
                 .associatedContentIds(getIds(contents))
                 .build();
 
-        fitnessScoreBefore.setValue(intNewFitnessScore);
+        fitnessScoreBefore.setValue(newFitnessRounded);
         fitnessScoreBefore.getLog().add(logEntry);
 
         return fitnessScoreBefore;
@@ -70,24 +75,28 @@ public class FitnessScoreCalculator implements ScoreCalculator {
             return fitnessScoreBefore;
         }
 
-        double updatedFitnessScore = Math.min(100.0, fitnessScoreBefore.getValue() + fitnessRegen);
-        int intUpdatedFitnessScore = (int) Math.round(updatedFitnessScore);
+        double updatedFitnessScore = fitnessScoreBefore.getValue() + fitnessRegen;
+        int newFitnessScoreRounded = (int) Math.round(updatedFitnessScore);
 
         if (!isDueForRepetition(content)) {
             // content was reviewed successfully but is not due for repetition
-            intUpdatedFitnessScore = fitnessScoreBefore.getValue() + 1;
+            newFitnessScoreRounded = fitnessScoreBefore.getValue() + 1;
+        }
+        if (newFitnessScoreRounded >= 100) {
+            // fitness score cannot be higher than 100
+            newFitnessScoreRounded = 100;
         }
 
         RewardScoreLogEntry logEntry = RewardScoreLogEntry.builder()
                 .date(OffsetDateTime.now())
-                .difference(intUpdatedFitnessScore - fitnessScoreBefore.getValue())
+                .difference(newFitnessScoreRounded - fitnessScoreBefore.getValue())
                 .oldValue(fitnessScoreBefore.getValue())
-                .newValue(intUpdatedFitnessScore)
+                .newValue(newFitnessScoreRounded)
                 .reason(RewardChangeReason.CONTENT_REVIEWED)
                 .associatedContentIds(List.of(event.getContentId()))
                 .build();
 
-        fitnessScoreBefore.setValue(intUpdatedFitnessScore);
+        fitnessScoreBefore.setValue(newFitnessScoreRounded);
         fitnessScoreBefore.getLog().add(logEntry);
 
         return fitnessScoreBefore;
@@ -125,20 +134,11 @@ public class FitnessScoreCalculator implements ScoreCalculator {
     }
 
     private boolean isDueForRepetition(Content content) {
-        OffsetDateTime today = OffsetDateTime.now();
-        OffsetDateTime repetitionDate = content.getUserProgressData().getNextLearnDate();
-
-        // Check if the repetition date is today or in the past
-        return repetitionDate != null && (repetitionDate.isBefore(today) || repetitionDate.isEqual(today));
+        return content.getUserProgressData().getIsDueForReview();
     }
 
     private boolean isNotNew(Content content) {
-        // check if the content has been learned before successfully
-        // otherwise it is considered new and should not be considered for fitness decrease
-        return content.getUserProgressData()
-                .getLog()
-                .stream()
-                .anyMatch(ProgressLogItem::getSuccess);
+        return content.getUserProgressData().getIsLearned();
     }
 
     private List<Content> getContentsToRepeat(List<Content> contents) {
@@ -175,7 +175,10 @@ public class FitnessScoreCalculator implements ScoreCalculator {
                 .getLog()
                 .stream()
                 // make sure that the latest review is not the one that triggered the event
-                .filter(logItem -> Duration.between(logItem.getTimestamp(), OffsetDateTime.now()).toMinutes() > 5)
+                // for this we check if the timestamp of the review is more than 5 minutes in the past
+                // this is not a perfect solution but is sufficient because multiple reviews per day
+                // do not reward the user with more fitness points than one review per day
+                .filter(logItem -> Duration.between(logItem.getTimestamp(), OffsetDateTime.now()).abs().toMinutes() > 5)
                 .findFirst();
     }
 
