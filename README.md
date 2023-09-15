@@ -1,8 +1,6 @@
 # Reward Service
 
-The Reward Service is a vital component in our system, designed to incentive user engagement and learning progress through a reward system. 
-
-The service manages five types of reward scores: Health, Fitness, Growth, Strength, and Power.These scores motivate users by providing tangible rewards and progress indicators.
+The service manages five types of reward scores: Health, Fitness, Growth, Strength, and Power.
 
 1. **Health Score:** Reflects a user's learning progress, increasing when they learn new content and decreasing when they fall behind.
 
@@ -16,15 +14,14 @@ The service manages five types of reward scores: Health, Fitness, Growth, Streng
 
 For more details about the Reward Service Scoring System, please refer to the [documentation](https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/Scoring%20System.html).
 
-## Purpose
+## API description
 
-The Reward Service serves the following purposes within our system:
+The GraphQL API is described in the [api.md file](api.md).
 
-1. **Motivate Learning:** By providing tangible rewards and progress indicators, the service motivates users to engage with new and old learning content.
+The endpoint for the GraphQL API is `/graphql`. The GraphQL Playground is available at `/graphiql`.
 
-2. **Track Progress:** It helps users track their learning progress and areas of improvement through different reward scores.
+## How to run
 
-3. **Encourage Interaction:** The service encourages interaction among students through fostering healthy competition and regular learning.
-
-4. **Facilitate Ranking:** The Power Score allows for the ranking of students based on their overall performance.
+How to run services locally is described in
+the [wiki](https://gits-enpro.readthedocs.io/en/latest/dev-manuals/backend/get-started.html).
 
