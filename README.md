@@ -49,6 +49,9 @@ The endpoint for the GraphQL API is `/graphql`. The GraphQL Playground is availa
 
 ## How to run
 
-How to run services locally is described in
-the [wiki](https://gits-enpro.readthedocs.io/en/latest/dev-manuals/backend/get-started.html).
+## Get started
+
+A guide how to start development can be
+found [wiki](https://gits-enpro.readthedocs.io/en/latest/dev-manuals/backend/get-started.html).
+
 
