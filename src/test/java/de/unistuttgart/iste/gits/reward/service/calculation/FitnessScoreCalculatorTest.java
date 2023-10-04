@@ -25,9 +25,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoresFullCorrectness() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setIsDueForReview(true)
                         .setIsLearned(true)
@@ -43,12 +43,12 @@ class FitnessScoreCalculatorTest {
                         .build())
         );
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
 
         assertThat(fitness.getValue(), is(99));
         assertThat(fitness.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logEntry = fitness.getLog().get(0);
+        final RewardScoreLogEntry logEntry = fitness.getLog().get(0);
         assertThat(logEntry.getDifference(), is(-1));
         assertThat(logEntry.getReason(), is(RewardChangeReason.CONTENT_DUE_FOR_REPETITION));
         assertThat(logEntry.getAssociatedContentIds(), contains(contentId));
@@ -63,9 +63,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoresExampleCase() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = Collections.nCopies(5,
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = Collections.nCopies(5,
                 createContentWithUserData(contentId,
                         UserProgressData.builder()
                                 .setNextLearnDate(OffsetDateTime.now().minusDays(10))
@@ -82,12 +82,12 @@ class FitnessScoreCalculatorTest {
                                 .build())
         );
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
 
         assertThat(fitness.getValue(), is(84)); //100 - 5 * (1 + (2 * (10+1) * (1 - 0.95^2)))
         assertThat(fitness.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logEntry = fitness.getLog().get(0);
+        final RewardScoreLogEntry logEntry = fitness.getLog().get(0);
         assertThat(logEntry.getDifference(), is(-16));
         assertThat(logEntry.getReason(), is(RewardChangeReason.CONTENT_DUE_FOR_REPETITION));
         assertThat(logEntry.getAssociatedContentIds(), hasItem(contentId));
@@ -103,9 +103,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoreWithoutContent() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, List.of());
+        final RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, List.of());
 
         assertThat(fitness.getValue(), is(100));
         assertThat(fitness.getLog(), is(empty()));
@@ -118,8 +118,8 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoresWithoutContentsDueForRepetition() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
+        final List<Content> contents = List.of(
                 createContentWithUserData(
                         UserProgressData.builder()
                                 .setIsDueForReview(false)
@@ -136,7 +136,7 @@ class FitnessScoreCalculatorTest {
                                 .build())
         );
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
 
         // should not change as no content is due for repetition
         assertThat(fitness.getValue(), is(100));
@@ -152,8 +152,8 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoresWithNoContentsThatWereNotLearnedYet() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
+        final List<Content> contents = List.of(
                 createContentWithUserData(
                         UserProgressData.builder()
                                 .setNextLearnDate(OffsetDateTime.now().minusDays(1))
@@ -166,7 +166,7 @@ class FitnessScoreCalculatorTest {
                                 .build())
         );
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
 
         // should not change as no content is due for repetition
         assertThat(fitness.getValue(), is(100));
@@ -180,9 +180,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testRecalculateNotGoingBelow0() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(0);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(0);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now())
                         .setIsLearned(true)
@@ -198,7 +198,7 @@ class FitnessScoreCalculatorTest {
                         .build())
         );
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.recalculateScore(allRewardScores, contents);
         assertThat(fitness.getValue(), is(0));
         assertThat(fitness.getLog(), hasSize(0));
     }
@@ -210,9 +210,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void calculateOnContentWorkedOn() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(50);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(50);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
                         .setIsLearned(true)
@@ -235,7 +235,7 @@ class FitnessScoreCalculatorTest {
                                         .build())) // not learned successfully yet
                                 .build())
         );
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -243,13 +243,13 @@ class FitnessScoreCalculatorTest {
                 .success(true)
                 .build();
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
 
         // should not change as no content is due for repetition
         assertThat(fitness.getValue(), is(75));
         assertThat(fitness.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logItem = fitness.getLog().get(0);
+        final RewardScoreLogEntry logItem = fitness.getLog().get(0);
         assertThat(logItem.getDifference(), is(25));
         assertThat(logItem.getReason(), is(RewardChangeReason.CONTENT_REVIEWED));
         assertThat(logItem.getAssociatedContentIds(), contains(contentId));
@@ -264,9 +264,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testCalculateOnContentWorkedOnNotExceeding100() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(100);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
                         .setIsLearned(true)
@@ -291,7 +291,7 @@ class FitnessScoreCalculatorTest {
                                         .build())) // not learned successfully yet
                                 .build())
         );
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -299,7 +299,7 @@ class FitnessScoreCalculatorTest {
                 .success(true)
                 .build();
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
 
         // should not change as no content is due for repetition
         assertThat(fitness.getValue(), is(100));
@@ -313,9 +313,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testUnsuccessfulRepetitionsDontRewardFitness() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(50);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(50);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
                         .setIsLearned(true)
@@ -329,7 +329,7 @@ class FitnessScoreCalculatorTest {
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(0.5)
@@ -337,7 +337,7 @@ class FitnessScoreCalculatorTest {
                 .success(false)
                 .build();
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
 
         // should not change as no content is due for repetition
         assertThat(fitness.getValue(), is(50));
@@ -351,9 +351,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testRepeatingContentsThatAreNotDueForLearningRewards1Fitness() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(50);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(50);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().plusDays(1))
                         .setIsLearned(true)
@@ -367,7 +367,7 @@ class FitnessScoreCalculatorTest {
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -375,12 +375,12 @@ class FitnessScoreCalculatorTest {
                 .success(true)
                 .build();
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
 
         assertThat(fitness.getValue(), is(51));
         assertThat(fitness.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logItem = fitness.getLog().get(0);
+        final RewardScoreLogEntry logItem = fitness.getLog().get(0);
         assertThat(logItem.getDifference(), is(1));
         assertThat(logItem.getReason(), is(RewardChangeReason.CONTENT_REVIEWED));
         assertThat(logItem.getAssociatedContentIds(), contains(contentId));
@@ -395,9 +395,9 @@ class FitnessScoreCalculatorTest {
      */
     @Test
     void testRepeatingContentMoreThanOnceADayWillNotRewardFitness() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(50);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(50);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 // one content that was learned 10 minutes ago
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setNextLearnDate(OffsetDateTime.now().minusDays(1))
@@ -415,7 +415,7 @@ class FitnessScoreCalculatorTest {
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -423,7 +423,7 @@ class FitnessScoreCalculatorTest {
                 .success(true)
                 .build();
 
-        RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+        final RewardScoreEntity fitness = fitnessScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
 
         assertThat(fitness.getValue(), is(50));
         assertThat(fitness.getLog(), is(empty()));
@@ -437,8 +437,8 @@ class FitnessScoreCalculatorTest {
     @Test
     void testCorrectnessInfluencesFitnessReward() {
         AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithFitnessOf(0);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder()
                         .setIsLearned(true)
                         .setIsDueForReview(true)
@@ -497,11 +497,11 @@ class FitnessScoreCalculatorTest {
         );
     }
 
-    private Content createContentWithUserData(UserProgressData userProgressData) {
+    private Content createContentWithUserData(final UserProgressData userProgressData) {
         return createContentWithUserData(UUID.randomUUID(), userProgressData);
     }
 
-    private Content createContentWithUserData(UUID contentId, UserProgressData userProgressData) {
+    private Content createContentWithUserData(final UUID contentId, final UserProgressData userProgressData) {
         return FlashcardSetAssessment.builder()
                 .setId(contentId)
                 .setMetadata(ContentMetadata.builder().build())
@@ -510,7 +510,7 @@ class FitnessScoreCalculatorTest {
                 .build();
     }
 
-    private AllRewardScoresEntity createAllRewardScoresEntityWithFitnessOf(int fitness) {
+    private AllRewardScoresEntity createAllRewardScoresEntityWithFitnessOf(final int fitness) {
         return AllRewardScoresEntity.builder()
                 .health(RewardScoreEntity.builder().value(100).build())
                 .fitness(RewardScoreEntity.builder().value(fitness).build())

@@ -22,19 +22,19 @@ class HealthScoreCalculatorTest {
      */
     @Test
     void testRecalculateScores() {
-        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithHealthOf(100);
-        UUID contentId = UUID.randomUUID();
-        UserProgressData userProgressData = UserProgressData.builder().build();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithHealthOf(100);
+        final UUID contentId = UUID.randomUUID();
+        final UserProgressData userProgressData = UserProgressData.builder().build();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, userProgressData, 1)
         );
 
-        RewardScoreEntity health = healthScoreCalculator.recalculateScore(rewardScoresEntity, contents);
+        final RewardScoreEntity health = healthScoreCalculator.recalculateScore(rewardScoresEntity, contents);
 
         assertThat(health.getValue(), is(99));
         assertThat(health.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logEntry = health.getLog().get(0);
+        final RewardScoreLogEntry logEntry = health.getLog().get(0);
         assertThat(logEntry.getDifference(), is(-1));
         assertThat(logEntry.getReason(), is(RewardChangeReason.CONTENT_DUE_FOR_LEARNING));
         assertThat(logEntry.getAssociatedContentIds(), contains(contentId));
@@ -49,19 +49,19 @@ class HealthScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoreNotBelow0() {
-        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithHealthOf(1);
-        UUID contentId = UUID.randomUUID();
-        UserProgressData userProgressData = UserProgressData.builder().build();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithHealthOf(1);
+        final UUID contentId = UUID.randomUUID();
+        final UserProgressData userProgressData = UserProgressData.builder().build();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, userProgressData, 100)
         );
 
-        RewardScoreEntity health = healthScoreCalculator.recalculateScore(rewardScoresEntity, contents);
+        final RewardScoreEntity health = healthScoreCalculator.recalculateScore(rewardScoresEntity, contents);
 
         assertThat(health.getValue(), is(0));
         assertThat(health.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logEntry = health.getLog().get(0);
+        final RewardScoreLogEntry logEntry = health.getLog().get(0);
         assertThat(logEntry.getDifference(), is(-1));
         assertThat(logEntry.getReason(), is(RewardChangeReason.CONTENT_DUE_FOR_LEARNING));
         assertThat(logEntry.getAssociatedContentIds(), contains(contentId));
@@ -76,19 +76,19 @@ class HealthScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoreMaxHealthDecrease() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = Collections.nCopies(5,
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = Collections.nCopies(5,
                 createContentWithUserData(contentId,
                         UserProgressData.builder().build(), 10)
         );
 
-        RewardScoreEntity health = healthScoreCalculator.recalculateScore(allRewardScores, contents);
+        final RewardScoreEntity health = healthScoreCalculator.recalculateScore(allRewardScores, contents);
 
         assertThat(health.getValue(), is(80)); // Max health decrease 20%
         assertThat(health.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logEntry = health.getLog().get(0);
+        final RewardScoreLogEntry logEntry = health.getLog().get(0);
         assertThat(logEntry.getDifference(), is(-20));
         assertThat(logEntry.getReason(), is(RewardChangeReason.CONTENT_DUE_FOR_LEARNING));
         assertThat(logEntry.getAssociatedContentIds(), hasItem(contentId));
@@ -104,19 +104,19 @@ class HealthScoreCalculatorTest {
      */
     @Test
     void testRecalculateScore() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = Collections.nCopies(2,
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = Collections.nCopies(2,
                 createContentWithUserData(contentId,
                         UserProgressData.builder().build(), 7)
         );
 
-        RewardScoreEntity health = healthScoreCalculator.recalculateScore(allRewardScores, contents);
+        final RewardScoreEntity health = healthScoreCalculator.recalculateScore(allRewardScores, contents);
 
         assertThat(health.getValue(), is(92)); //100 - 0.5 * 2 * 8
         assertThat(health.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logEntry = health.getLog().get(0);
+        final RewardScoreLogEntry logEntry = health.getLog().get(0);
         assertThat(logEntry.getDifference(), is(-8));
         assertThat(logEntry.getReason(), is(RewardChangeReason.CONTENT_DUE_FOR_LEARNING));
         assertThat(logEntry.getAssociatedContentIds(), hasItem(contentId));
@@ -132,12 +132,12 @@ class HealthScoreCalculatorTest {
      */
     @Test
     void calculateOnContentWorkedOn() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(50);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(50);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder().build(), 1)
         );
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -145,13 +145,13 @@ class HealthScoreCalculatorTest {
                 .success(true)
                 .build();
 
-        RewardScoreEntity health = healthScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+        final RewardScoreEntity health = healthScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
 
         // should be 100 due to no contents being due
         assertThat(health.getValue(), is(100));
         assertThat(health.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logItem = health.getLog().get(0);
+        final RewardScoreLogEntry logItem = health.getLog().get(0);
         assertThat(logItem.getDifference(), is(50));
         assertThat(logItem.getReason(), is(RewardChangeReason.CONTENT_DONE));
         assertThat(logItem.getAssociatedContentIds(), contains(contentId));
@@ -166,12 +166,12 @@ class HealthScoreCalculatorTest {
      */
     @Test
     void calculateOnContentWorkedOnNotExceeding100() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder().build(), 1)
         );
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -179,7 +179,7 @@ class HealthScoreCalculatorTest {
                 .success(true)
                 .build();
 
-        RewardScoreEntity health = healthScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
+        final RewardScoreEntity health = healthScoreCalculator.calculateOnContentWorkedOn(allRewardScores, contents, event);
 
         // should be 100 due to no contents being due
         assertThat(health.getValue(), is(100));
@@ -193,9 +193,9 @@ class HealthScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoreWithoutContent() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
 
-        RewardScoreEntity health = healthScoreCalculator.recalculateScore(allRewardScores, List.of());
+        final RewardScoreEntity health = healthScoreCalculator.recalculateScore(allRewardScores, List.of());
 
         assertThat(health.getValue(), is(100));
         assertThat(health.getLog(), is(empty()));
@@ -208,21 +208,40 @@ class HealthScoreCalculatorTest {
      */
     @Test
     void testRecalculateScoresWithoutContentsDueForLearning() {
-        AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
-        UUID contentId = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final AllRewardScoresEntity allRewardScores = createAllRewardScoresEntityWithHealthOf(100);
+        final UUID contentId = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 createContentWithUserData(contentId,
                         UserProgressData.builder().build(), -1)
         );
 
-        RewardScoreEntity health = healthScoreCalculator.recalculateScore(allRewardScores, contents);
+        final RewardScoreEntity health = healthScoreCalculator.recalculateScore(allRewardScores, contents);
 
         // should not change as no content is due for repetition
         assertThat(health.getValue(), is(100));
         assertThat(health.getLog(), is(empty()));
     }
 
-    private Content createContentWithUserData(UUID contentId, UserProgressData userProgressData, int overdue) {
+    /**
+     * Tests the calculation of the initial health value for a new entity.
+     */
+    @Test
+    void testCalculateInitialHealthValueForNewEntity() {
+        // Create a list of contents with different overdue days
+        final List<Content> contents = new ArrayList<>();
+        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 1));
+        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 5));
+        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 10));
+
+        // Calculate the initial health value using the method
+        final int initialHealthValue = healthScoreCalculator.calculateInitialHealthValueForNewEntity(contents);
+
+        // Calculate expected initial health value
+        final int expectedInitialHealthValue = 91;
+        assertThat(initialHealthValue, is(expectedInitialHealthValue));
+    }
+
+    private Content createContentWithUserData(final UUID contentId, final UserProgressData userProgressData, final int overdue) {
         return FlashcardSetAssessment.builder()
                 .setId(contentId)
                 .setMetadata(ContentMetadata.builder().setSuggestedDate(OffsetDateTime.now().minusDays(overdue)).build())
@@ -231,7 +250,7 @@ class HealthScoreCalculatorTest {
                 .build();
     }
 
-    private AllRewardScoresEntity createAllRewardScoresEntityWithHealthOf(int health) {
+    private AllRewardScoresEntity createAllRewardScoresEntityWithHealthOf(final int health) {
         return AllRewardScoresEntity.builder()
                 .health(RewardScoreEntity.builder().value(health).build())
                 .fitness(RewardScoreEntity.builder().value(100).build())
@@ -239,20 +258,5 @@ class HealthScoreCalculatorTest {
                 .strength(RewardScoreEntity.builder().value(0).build())
                 .power(RewardScoreEntity.builder().value(0).build())
                 .build();
-    }
-    @Test
-    void testCalculateInitialHealthValueForNewEntity() {
-        // Create a list of contents with different overdue days
-        List<Content> contents = new ArrayList<>();
-        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 1));
-        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 5));
-        contents.add(createContentWithUserData(UUID.randomUUID(), UserProgressData.builder().build(), 10));
-
-        // Calculate the initial health value using the method
-        int initialHealthValue = healthScoreCalculator.calculateInitialHealthValueForNewEntity(contents);
-
-        // Calculate expected initial health value based on your logic
-        int expectedInitialHealthValue = 91;
-        assertThat(initialHealthValue, is(expectedInitialHealthValue));
     }
 }

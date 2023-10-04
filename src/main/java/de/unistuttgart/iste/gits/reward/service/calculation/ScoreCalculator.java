@@ -7,6 +7,9 @@ import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
 
 import java.util.List;
 
+/**
+ * Common interface for all score calculators.
+ */
 public interface ScoreCalculator {
 
     /**

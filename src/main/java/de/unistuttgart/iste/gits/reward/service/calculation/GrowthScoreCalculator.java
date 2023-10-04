@@ -1,12 +1,14 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
-import de.unistuttgart.iste.gits.generated.dto.*;
+import de.unistuttgart.iste.gits.generated.dto.Content;
+import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
 import de.unistuttgart.iste.gits.reward.persistence.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Calculates the growth score of a user, according the concept documented
@@ -15,59 +17,81 @@ import java.util.List;
 @Component
 public class GrowthScoreCalculator implements ScoreCalculator {
     @Override
-    public RewardScoreEntity recalculateScore(AllRewardScoresEntity allRewardScores, List<Content> contents) {
+    public RewardScoreEntity recalculateScore(final AllRewardScoresEntity allRewardScores,
+                                              final List<Content> contents) {
+        // growth score is not affected by recalculation
+        // it is only affected by content worked on
         return allRewardScores.getGrowth();
     }
 
     @Override
-    public RewardScoreEntity calculateOnContentWorkedOn(AllRewardScoresEntity allRewardScores, List<Content> contents, UserProgressLogEvent event) {
-        RewardScoreEntity growthScore = allRewardScores.getGrowth();
-        int oldScore = growthScore.getValue();
-        int currentScore = getCurrentScore(contents);
-        int totalScore = getTotalScore(contents);
+    public RewardScoreEntity calculateOnContentWorkedOn(final AllRewardScoresEntity allRewardScores,
+                                                        final List<Content> contents,
+                                                        final UserProgressLogEvent event) {
+        final RewardScoreEntity growthEntity = allRewardScores.getGrowth();
+        final int oldScore = growthEntity.getValue();
+        final int currentScore = calculateCurrentGrowth(contents);
+        final int totalScore = getTotalAchievableGrowth(contents);
 
-        int diff = currentScore - oldScore;
+        final int diff = currentScore - oldScore;
 
         if (diff == 0) {
             // no change in growth score, so no log entry is created
-            return growthScore;
+            return growthEntity;
         }
 
-        RewardScoreLogEntry logEntry = RewardScoreLogEntry.builder()
+        final RewardScoreLogEntry logEntry = createLogEntry(oldScore, currentScore, event.getContentId());
+
+        growthEntity.setValue(currentScore);
+        growthEntity.setPercentage(calculatePercentage(currentScore, totalScore));
+        growthEntity.getLog().add(logEntry);
+
+        return growthEntity;
+    }
+
+    private static RewardScoreLogEntry createLogEntry(final int oldScore, final int currentScore, final UUID contentId) {
+        return RewardScoreLogEntry.builder()
                 .date(OffsetDateTime.now())
-                .difference(diff)
+                .difference(currentScore - oldScore)
                 .newValue(currentScore)
                 .oldValue(oldScore)
                 .reason(RewardChangeReason.CONTENT_DONE)
-                .associatedContentIds(List.of(event.getContentId()))
+                .associatedContentIds(List.of(contentId))
                 .build();
-
-
-        growthScore.setValue(currentScore);
-        growthScore.setPercentage(calculatePercentage(currentScore, totalScore));
-        growthScore.getLog().add(logEntry);
-
-        return growthScore;
     }
 
-    private float calculatePercentage(int currentScore, int totalScore) {
+    private float calculatePercentage(final int currentScore, final int totalScore) {
+        if (totalScore == 0) {
+            return 0;
+        }
         return (float) currentScore / totalScore;
     }
 
-    private int getTotalScore(List<Content> contents) {
+    /**
+     * Calculates the total achievable growth score of a course.
+     *
+     * @param contents the contents of the course
+     * @return the total achievable growth score
+     */
+    private int getTotalAchievableGrowth(final List<Content> contents) {
         return contents.stream()
                 .mapToInt(content -> content.getMetadata().getRewardPoints())
                 .sum();
     }
 
-    private int getCurrentScore(List<Content> contents) {
+    /**
+     * Calculates the current growth score of a user.
+     *
+     * @param contents the contents of the course
+     * @return the current growth score
+     */
+    private int calculateCurrentGrowth(final List<Content> contents) {
         return contents.stream()
-                .filter(content -> contentCompletedSuccessfully(content.getUserProgressData()))
+                // only consider contents that are learned
+                .filter(content -> content.getUserProgressData().getIsLearned())
+                // sum up the reward points of all learned contents
                 .mapToInt(content -> content.getMetadata().getRewardPoints())
                 .sum();
     }
 
-    private boolean contentCompletedSuccessfully(UserProgressData userProgressData) {
-        return userProgressData.getLog().stream().anyMatch(ProgressLogItem::getSuccess);
-    }
 }

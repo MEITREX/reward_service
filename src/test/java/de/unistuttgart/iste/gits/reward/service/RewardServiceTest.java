@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.gits.reward.service;
 
 import de.unistuttgart.iste.gits.common.event.*;
+import de.unistuttgart.iste.gits.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
@@ -47,14 +48,14 @@ class RewardServiceTest {
      */
     @Test
     void testInitializeRewardScoreEntity() {
-        UUID courseId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        final UUID courseId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
 
-        AllRewardScoresEntity expectedEntity = dummyAllRewardScoresBuilder(courseId, userId).build();
+        final AllRewardScoresEntity expectedEntity = dummyAllRewardScoresBuilder(courseId, userId).build();
 
         when(allRewardScoresRepository.save(any())).thenReturn(expectedEntity);
 
-        AllRewardScoresEntity rewardScoresEntity = rewardService.initializeRewardScores(courseId, userId);
+        final AllRewardScoresEntity rewardScoresEntity = rewardService.initializeRewardScores(courseId, userId);
 
         verify(allRewardScoresRepository).save(any());
         assertThat(rewardScoresEntity, is(expectedEntity));
@@ -68,19 +69,19 @@ class RewardServiceTest {
      */
     @Test
     void testCalculateScoresOnContentWorkedOn() {
-        UUID contentId = UUID.randomUUID();
-        UUID courseId = UUID.randomUUID();
-        UUID userID = UUID.randomUUID();
-        UUID chapterId1 = UUID.randomUUID();
-        UUID chapterId2 = UUID.randomUUID();
+        final UUID contentId = UUID.randomUUID();
+        final UUID courseId = UUID.randomUUID();
+        final UUID userID = UUID.randomUUID();
+        final UUID chapterId1 = UUID.randomUUID();
+        final UUID chapterId2 = UUID.randomUUID();
 
-        AllRewardScoresEntity.PrimaryKey primaryKey = new AllRewardScoresEntity.PrimaryKey(courseId, userID);
+        final AllRewardScoresEntity.PrimaryKey primaryKey = new AllRewardScoresEntity.PrimaryKey(courseId, userID);
 
-        UserProgressData progressData = UserProgressData.builder().build();
-        List<UUID> chapterIds = List.of(chapterId1, chapterId2);
-        List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
+        final UserProgressData progressData = UserProgressData.builder().build();
+        final List<UUID> chapterIds = List.of(chapterId1, chapterId2);
+        final List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
 
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(userID)
                 .contentId(contentId)
                 .correctness(1)
@@ -88,9 +89,9 @@ class RewardServiceTest {
                 .success(true)
                 .build();
 
-        AllRewardScoresEntity allRewardScoresEntity = dummyAllRewardScoresBuilder(courseId, userID).build();
+        final AllRewardScoresEntity allRewardScoresEntity = dummyAllRewardScoresBuilder(courseId, userID).build();
 
-        RewardScores expectedRewardScores = new RewardScores(
+        final RewardScores expectedRewardScores = new RewardScores(
                 new RewardScore(100, 0, null),
                 new RewardScore(100, 0, null),
                 new RewardScore(0, 0, null),
@@ -104,7 +105,7 @@ class RewardServiceTest {
         when(contentServiceClient.getContentsWithUserProgressData(userID, chapterIds)).thenReturn(contents);
         when(rewardScoreMapper.entityToDto(allRewardScoresEntity)).thenReturn(expectedRewardScores);
 
-        RewardScores rewardScores = rewardService.calculateScoresOnContentWorkedOn(event);
+        final RewardScores rewardScores = rewardService.calculateScoresOnContentWorkedOn(event);
 
         assertThat(rewardScores, is(expectedRewardScores));
         verify(allRewardScoresRepository).save(any());
@@ -123,19 +124,19 @@ class RewardServiceTest {
      */
     @Test
     void testRecalculateScores() {
-        UUID courseId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        UUID contentId = UUID.randomUUID();
-        UUID chapterId1 = UUID.randomUUID();
-        UUID chapterId2 = UUID.randomUUID();
+        final UUID courseId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final UUID contentId = UUID.randomUUID();
+        final UUID chapterId1 = UUID.randomUUID();
+        final UUID chapterId2 = UUID.randomUUID();
 
-        UserProgressData progressData = UserProgressData.builder().build();
-        AllRewardScoresEntity allRewardScoresEntity = dummyAllRewardScoresBuilder(courseId, userId).build();
-        AllRewardScoresEntity.PrimaryKey primaryKey = new AllRewardScoresEntity.PrimaryKey(courseId, userId);
-        List<UUID> chapterIds = List.of(chapterId1, chapterId2);
-        List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
+        final UserProgressData progressData = UserProgressData.builder().build();
+        final AllRewardScoresEntity allRewardScoresEntity = dummyAllRewardScoresBuilder(courseId, userId).build();
+        final AllRewardScoresEntity.PrimaryKey primaryKey = new AllRewardScoresEntity.PrimaryKey(courseId, userId);
+        final List<UUID> chapterIds = List.of(chapterId1, chapterId2);
+        final List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
 
-        RewardScores expectedRewardScores = new RewardScores(
+        final RewardScores expectedRewardScores = new RewardScores(
                 new RewardScore(100, 0, null),
                 new RewardScore(100, 0, null),
                 new RewardScore(0, 0, null),
@@ -148,7 +149,7 @@ class RewardServiceTest {
         when(contentServiceClient.getContentsWithUserProgressData(userId, chapterIds)).thenReturn(contents);
         when(rewardScoreMapper.entityToDto(allRewardScoresEntity)).thenReturn(expectedRewardScores);
 
-        RewardScores rewardScores = rewardService.recalculateScores(courseId, userId);
+        final RewardScores rewardScores = rewardService.recalculateScores(courseId, userId);
 
         assertThat(rewardScores, is(expectedRewardScores));
         verify(allRewardScoresRepository).findById(primaryKey);
@@ -167,17 +168,17 @@ class RewardServiceTest {
     @Test
     void testGetScoreboardSuccessfully() {
         // arrange test data
-        UUID courseId = UUID.randomUUID();
+        final UUID courseId = UUID.randomUUID();
 
-        UUID userId1 = UUID.randomUUID();
-        UUID userId2 = UUID.randomUUID();
-        UUID userId3 = UUID.randomUUID();
+        final UUID userId1 = UUID.randomUUID();
+        final UUID userId2 = UUID.randomUUID();
+        final UUID userId3 = UUID.randomUUID();
 
-        AllRewardScoresEntity rewardScores1 = dummyAllRewardScoresBuilder(courseId, userId1).power(initializeRewardScoreEntity(10)).build();
-        AllRewardScoresEntity rewardScores2 = dummyAllRewardScoresBuilder(courseId, userId2).power(initializeRewardScoreEntity(30)).build();
-        AllRewardScoresEntity rewardScores3 = dummyAllRewardScoresBuilder(courseId, userId3).build();
+        final AllRewardScoresEntity rewardScores1 = dummyAllRewardScoresBuilder(courseId, userId1).power(initializeRewardScoreEntity(10)).build();
+        final AllRewardScoresEntity rewardScores2 = dummyAllRewardScoresBuilder(courseId, userId2).power(initializeRewardScoreEntity(30)).build();
+        final AllRewardScoresEntity rewardScores3 = dummyAllRewardScoresBuilder(courseId, userId3).build();
 
-        List<AllRewardScoresEntity> rewardScoresEntities = new ArrayList<>();
+        final List<AllRewardScoresEntity> rewardScoresEntities = new ArrayList<>();
         rewardScoresEntities.add(rewardScores1);
         rewardScoresEntities.add(rewardScores2);
         rewardScoresEntities.add(rewardScores3);
@@ -186,7 +187,7 @@ class RewardServiceTest {
         when(allRewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(courseId)).thenReturn(rewardScoresEntities);
 
         // act
-        List<ScoreboardItem> scoreboardItemList = rewardService.getScoreboard(courseId);
+        final List<ScoreboardItem> scoreboardItemList = rewardService.getScoreboard(courseId);
 
         //assert
         assertThat(scoreboardItemList.size(), is(3));
@@ -196,29 +197,34 @@ class RewardServiceTest {
 
         // verify that the repository was called
         verify(allRewardScoresRepository, times(1)).findAllRewardScoresEntitiesById_CourseId(courseId);
-
-
     }
 
     @Test
-    void testDataDeletion() {
+    void testDataDeletion() throws IncompleteEventMessageException {
         // arrange test data
-        UUID courseId = UUID.randomUUID();
+        final UUID courseId = UUID.randomUUID();
 
-        UUID userId1 = UUID.randomUUID();
-        UUID userId2 = UUID.randomUUID();
-        UUID userId3 = UUID.randomUUID();
+        final UUID userId1 = UUID.randomUUID();
+        final UUID userId2 = UUID.randomUUID();
+        final UUID userId3 = UUID.randomUUID();
 
-        AllRewardScoresEntity rewardScores1 = dummyAllRewardScoresBuilder(courseId, userId1).power(initializeRewardScoreEntity(10)).build();
-        AllRewardScoresEntity rewardScores2 = dummyAllRewardScoresBuilder(courseId, userId2).power(initializeRewardScoreEntity(30)).build();
-        AllRewardScoresEntity rewardScores3 = dummyAllRewardScoresBuilder(courseId, userId3).build();
+        final AllRewardScoresEntity rewardScores1 = dummyAllRewardScoresBuilder(courseId, userId1)
+                .power(initializeRewardScoreEntity(10))
+                .build();
+        final AllRewardScoresEntity rewardScores2 = dummyAllRewardScoresBuilder(courseId, userId2)
+                .power(initializeRewardScoreEntity(30))
+                .build();
+        final AllRewardScoresEntity rewardScores3 = dummyAllRewardScoresBuilder(courseId, userId3).build();
 
-        List<AllRewardScoresEntity> rewardScoresEntities = new ArrayList<>();
+        final List<AllRewardScoresEntity> rewardScoresEntities = new ArrayList<>();
         rewardScoresEntities.add(rewardScores1);
         rewardScoresEntities.add(rewardScores2);
         rewardScoresEntities.add(rewardScores3);
 
-        CourseChangeEvent event = CourseChangeEvent.builder().courseId(courseId).operation(CrudOperation.DELETE).build();
+        final CourseChangeEvent event = CourseChangeEvent.builder()
+                .courseId(courseId)
+                .operation(CrudOperation.DELETE)
+                .build();
 
         // mock repository
         when(allRewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(courseId)).thenReturn(rewardScoresEntities);
@@ -226,12 +232,11 @@ class RewardServiceTest {
         // act
         rewardService.removeRewardData(event);
 
-
         // verify that the repository was called
         verify(allRewardScoresRepository, times(1)).findAllRewardScoresEntitiesById_CourseId(courseId);
     }
 
-    private static AllRewardScoresEntity.AllRewardScoresEntityBuilder dummyAllRewardScoresBuilder(UUID courseId, UUID userId) {
+    private static AllRewardScoresEntity.AllRewardScoresEntityBuilder dummyAllRewardScoresBuilder(final UUID courseId, final UUID userId) {
         return AllRewardScoresEntity.builder()
                 .id(new AllRewardScoresEntity.PrimaryKey(courseId, userId))
                 .health(initializeRewardScoreEntity(100))
@@ -244,13 +249,12 @@ class RewardServiceTest {
 
     @Test
     void testInvalidCourseEventInput(){
-        CourseChangeEvent noCourseIdEvent = CourseChangeEvent.builder().operation(CrudOperation.DELETE).build();
-        CourseChangeEvent noOperationEvent = CourseChangeEvent.builder().courseId(UUID.randomUUID()).build();
-
+        final CourseChangeEvent noCourseIdEvent = CourseChangeEvent.builder().operation(CrudOperation.DELETE).build();
+        final CourseChangeEvent noOperationEvent = CourseChangeEvent.builder().courseId(UUID.randomUUID()).build();
 
         // act
-        assertThrows(NullPointerException.class, () -> rewardService.removeRewardData(noCourseIdEvent));
-        assertThrows(NullPointerException.class, () -> rewardService.removeRewardData(noOperationEvent));
+        assertThrows(IncompleteEventMessageException.class, () -> rewardService.removeRewardData(noCourseIdEvent));
+        assertThrows(IncompleteEventMessageException.class, () -> rewardService.removeRewardData(noOperationEvent));
 
         // verify that the repository was called
         verify(allRewardScoresRepository, never()).findAllRewardScoresEntitiesById_CourseId(any());
@@ -258,9 +262,15 @@ class RewardServiceTest {
     }
 
     @Test
-    void testWrongOperationTypeCourseEventInput(){
-        CourseChangeEvent createEvent = CourseChangeEvent.builder().courseId(UUID.randomUUID()).operation(CrudOperation.CREATE).build();
-        CourseChangeEvent updateEvent = CourseChangeEvent.builder().courseId(UUID.randomUUID()).operation(CrudOperation.UPDATE).build();
+    void testWrongOperationTypeCourseEventInput() throws IncompleteEventMessageException {
+        final CourseChangeEvent createEvent = CourseChangeEvent.builder()
+                .courseId(UUID.randomUUID())
+                .operation(CrudOperation.CREATE)
+                .build();
+        final CourseChangeEvent updateEvent = CourseChangeEvent.builder()
+                .courseId(UUID.randomUUID())
+                .operation(CrudOperation.UPDATE)
+                .build();
 
         rewardService.removeRewardData(createEvent);
         rewardService.removeRewardData(updateEvent);
@@ -269,14 +279,14 @@ class RewardServiceTest {
         verify(allRewardScoresRepository, never()).findAllRewardScoresEntitiesById_CourseId(any());
     }
 
-    private static RewardScoreEntity initializeRewardScoreEntity(int initialValue) {
-        RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
+    private static RewardScoreEntity initializeRewardScoreEntity(final int initialValue) {
+        final RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
         rewardScoreEntity.setValue(initialValue);
         rewardScoreEntity.setLog(new ArrayList<>());
         return rewardScoreEntity;
     }
 
-    private Content createContentWithUserData(UUID contentId, UserProgressData userProgressData) {
+    private Content createContentWithUserData(final UUID contentId, final UserProgressData userProgressData) {
         return FlashcardSetAssessment.builder()
                 .setId(contentId)
                 .setAssessmentMetadata(AssessmentMetadata.builder().build())

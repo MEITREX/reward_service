@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.reward.integration;
+package de.unistuttgart.iste.gits.reward.api;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.generated.dto.ScoreboardItem;
@@ -27,17 +27,15 @@ class QueryTest {
     RewardService rewardService;
 
 
-
-
     /**
      * Given a user with a rewardScore exist
      * When the rewardScore is queried
      * Then the rewardScore is returned
      */
     @Test
-    void testCourseRewardScoresForUser(GraphQlTester tester) {
-        UUID courseId = UUID.randomUUID();
-        UUID user = UUID.randomUUID();
+    void testCourseRewardScoresForUser(final GraphQlTester tester) {
+        final UUID courseId = UUID.randomUUID();
+        final UUID user = UUID.randomUUID();
 
         allRewardScoresRepository.save(AllRewardScoresEntity.builder()
                 .id(new AllRewardScoresEntity.PrimaryKey(courseId, user))
@@ -48,7 +46,7 @@ class QueryTest {
                 .power(initializeRewardScoreEntity(0))
                 .build());
 
-        String query = """
+        final String query = """
                  query($courseId: UUID!, $userId: UUID!) {
                     courseRewardScoresForUser(courseId: $courseId, userId: $userId) {
                         health {
@@ -88,10 +86,10 @@ class QueryTest {
      * Then the scoreboard is returned with the correct scores
      */
     @Test
-    void testGetScoreboard(GraphQlTester tester) {
-        UUID courseId = UUID.randomUUID();
-        UUID user1 = UUID.randomUUID();
-        UUID user2 = UUID.randomUUID();
+    void testGetScoreboard(final GraphQlTester tester) {
+        final UUID courseId = UUID.randomUUID();
+        final UUID user1 = UUID.randomUUID();
+        final UUID user2 = UUID.randomUUID();
 
         allRewardScoresRepository.save(AllRewardScoresEntity.builder()
                 .id(new AllRewardScoresEntity.PrimaryKey(courseId, user1))
@@ -111,10 +109,10 @@ class QueryTest {
                 .power(initializeRewardScoreEntity(30))
                 .build());
 
-        var scoreboardItem1 = new ScoreboardItem(user1, 0);
-        var scoreboardItem2 = new ScoreboardItem(user2, 30);
+        final var scoreboardItem1 = new ScoreboardItem(user1, 0);
+        final var scoreboardItem2 = new ScoreboardItem(user2, 30);
 
-        String query = """
+        final String query = """
                 query($courseId: UUID!) {
                     scoreboard(courseId: $courseId) {
                             userId
@@ -130,8 +128,8 @@ class QueryTest {
 
     }
 
-    private static RewardScoreEntity initializeRewardScoreEntity(int initialValue) {
-        RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
+    private static RewardScoreEntity initializeRewardScoreEntity(final int initialValue) {
+        final RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
         rewardScoreEntity.setValue(initialValue);
         rewardScoreEntity.setLog(new ArrayList<>());
         return rewardScoreEntity;

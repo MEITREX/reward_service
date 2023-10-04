@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.gits.reward.service;
 
 import de.unistuttgart.iste.gits.common.event.*;
+import de.unistuttgart.iste.gits.common.exception.IncompleteEventMessageException;
 import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
@@ -14,6 +15,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static java.util.Comparator.comparing;
 
 @Service
 @Slf4j
@@ -48,33 +51,39 @@ public class RewardService {
      * @param userId   the id of the user
      * @return the recalculated reward scores
      */
-    public RewardScores recalculateScores(UUID courseId, UUID userId) {
-        AllRewardScoresEntity allRewardScoresEntity = rewardScoresRepository
+    public RewardScores recalculateScores(final UUID courseId, final UUID userId) {
+
+        final AllRewardScoresEntity allRewardScoresEntity = rewardScoresRepository
                 .findById(new AllRewardScoresEntity.PrimaryKey(courseId, userId))
                 .orElseGet(() -> initializeRewardScores(courseId, userId));
 
-        List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
+        final List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
 
-        List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
+        final List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
 
         try {
-            allRewardScoresEntity
-                    .setHealth(healthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-            allRewardScoresEntity
-                    .setFitness(fitnessScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-            allRewardScoresEntity
-                    .setStrength(strengthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-            allRewardScoresEntity
-                    .setGrowth(growthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-            allRewardScoresEntity
-                    .setPower(powerScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
-        } catch (Exception e) {
-            throw new RewardScoreCalculationException("Could not recalculate reward scores", e);
+            recalculateScoresAndUpdateEntity(allRewardScoresEntity, contents);
+        } catch (final Exception e) {
+            throw new RewardScoreCalculationException("Could not recalculate reward scores.", e);
         }
 
-        var result = rewardScoresRepository.save(allRewardScoresEntity);
+        final var result = rewardScoresRepository.save(allRewardScoresEntity);
 
         return mapper.entityToDto(result);
+    }
+
+    private void recalculateScoresAndUpdateEntity(final AllRewardScoresEntity allRewardScoresEntity,
+                                                  final List<Content> contents) {
+        allRewardScoresEntity
+                .setHealth(healthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+        allRewardScoresEntity
+                .setFitness(fitnessScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+        allRewardScoresEntity
+                .setStrength(strengthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+        allRewardScoresEntity
+                .setGrowth(growthScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
+        allRewardScoresEntity
+                .setPower(powerScoreCalculator.recalculateScore(allRewardScoresEntity, contents));
     }
 
     /**
@@ -87,11 +96,11 @@ public class RewardService {
     public void recalculateAllScores() {
         CourseServiceClient.clearCache();
 
-        List<AllRewardScoresEntity> allRewardScoresEntities = rewardScoresRepository.findAll();
-        for (AllRewardScoresEntity allRewardScoresEntity : allRewardScoresEntities) {
+        final List<AllRewardScoresEntity> allRewardScoresEntities = rewardScoresRepository.findAll();
+        for (final AllRewardScoresEntity allRewardScoresEntity : allRewardScoresEntities) {
             try {
                 recalculateScores(allRewardScoresEntity.getId().getCourseId(), allRewardScoresEntity.getId().getUserId());
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 log.error("Could not recalculate reward scores for user {} in course {}",
                         allRewardScoresEntity.getId().getUserId(), allRewardScoresEntity.getId().getCourseId(), e);
             }
@@ -106,37 +115,42 @@ public class RewardService {
      * @param userId   the id of the user
      * @return the reward scores
      */
-    public AllRewardScoresEntity getAllRewardScoresEntity(UUID courseId, UUID userId) {
+    public AllRewardScoresEntity getAllRewardScoresEntity(final UUID courseId, final UUID userId) {
         return rewardScoresRepository
                 .findById(new AllRewardScoresEntity.PrimaryKey(courseId, userId))
                 .orElseGet(() -> initializeRewardScores(courseId, userId));
     }
 
-    public RewardScores getRewardScores(UUID courseId, UUID userId) {
-        return mapper.entityToDto(getAllRewardScoresEntity(courseId, userId));
+    /**
+     * Gets all reward scores for a given user and course and initializes them if they do not exist yet.
+     *
+     * @param courseId the id of the course
+     * @param userId   the id of the user
+     * @return the reward scores
+     */
+    public RewardScores getRewardScores(final UUID courseId, final UUID userId) {
+        final AllRewardScoresEntity allRewardScoresEntity = getAllRewardScoresEntity(courseId, userId);
+        return mapper.entityToDto(allRewardScoresEntity);
     }
 
-    public RewardScores calculateScoresOnContentWorkedOn(UserProgressLogEvent event) {
-        UUID courseId = courseServiceClient.getCourseIdForContent(event.getContentId());
+    /**
+     * Calculates the new reward scores for a given user and course when the user works on a content.
+     *
+     * @param event the event that triggered the calculation
+     * @return the new reward scores
+     */
+    public RewardScores calculateScoresOnContentWorkedOn(final UserProgressLogEvent event) {
+        final UUID courseId = courseServiceClient.getCourseIdForContent(event.getContentId());
 
         AllRewardScoresEntity allRewardScoresEntity = getAllRewardScoresEntity(courseId, event.getUserId());
 
-        List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
-        List<Content> contents
+        final List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
+        final List<Content> contents
                 = contentServiceClient.getContentsWithUserProgressData(event.getUserId(), chapterIds);
 
         try {
-            allRewardScoresEntity.setHealth(healthScoreCalculator
-                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-            allRewardScoresEntity.setFitness(fitnessScoreCalculator
-                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-            allRewardScoresEntity.setStrength(strengthScoreCalculator
-                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-            allRewardScoresEntity.setGrowth(growthScoreCalculator
-                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-            allRewardScoresEntity.setPower(powerScoreCalculator
-                    .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
-        } catch (Exception e) {
+            calculateNewScoresOnContentWorkedOn(event, allRewardScoresEntity, contents);
+        } catch (final Exception e) {
             throw new RewardScoreCalculationException("Error while calculating fitness score", e);
         }
 
@@ -145,16 +159,39 @@ public class RewardService {
         return mapper.entityToDto(allRewardScoresEntity);
     }
 
-    public AllRewardScoresEntity initializeRewardScores(UUID courseId, UUID userId) {
-        AllRewardScoresEntity allRewardScoresEntity = new AllRewardScoresEntity();
-        allRewardScoresEntity.setId(new AllRewardScoresEntity.PrimaryKey(courseId, userId));
+    private void calculateNewScoresOnContentWorkedOn(final UserProgressLogEvent event,
+                                                     final AllRewardScoresEntity allRewardScoresEntity,
+                                                     final List<Content> contents) {
+        allRewardScoresEntity.setHealth(healthScoreCalculator
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+        allRewardScoresEntity.setFitness(fitnessScoreCalculator
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+        allRewardScoresEntity.setStrength(strengthScoreCalculator
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+        allRewardScoresEntity.setGrowth(growthScoreCalculator
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+        allRewardScoresEntity.setPower(powerScoreCalculator
+                .calculateOnContentWorkedOn(allRewardScoresEntity, contents, event));
+    }
 
-        initializeHealth(courseId, userId, allRewardScoresEntity);
-        allRewardScoresEntity.setStrength(initializeRewardScoreEntity(INITIAL_ABSOLUTE_REWARD_SCORE));
-        allRewardScoresEntity.setFitness(initializeRewardScoreEntity(INITIAL_RELATIVE_REWARD_SCORE));
-        allRewardScoresEntity.setGrowth(initializeRewardScoreEntity(INITIAL_ABSOLUTE_REWARD_SCORE));
-        allRewardScoresEntity.setPower(initializeRewardScoreEntity(INITIAL_ABSOLUTE_REWARD_SCORE));
-        return rewardScoresRepository.save(allRewardScoresEntity);
+    /**
+     * Initializes a new {@link AllRewardScoresEntity} for a given user and course
+     * with the default values for the reward scores.
+     *
+     * @param courseId the id of the course
+     * @param userId   the id of the user
+     * @return the initialized entity
+     */
+    public AllRewardScoresEntity initializeRewardScores(final UUID courseId, final UUID userId) {
+        final AllRewardScoresEntity allRewardScores = new AllRewardScoresEntity();
+        allRewardScores.setId(new AllRewardScoresEntity.PrimaryKey(courseId, userId));
+
+        initializeHealth(courseId, userId, allRewardScores);
+        allRewardScores.setStrength(initializeRewardScoreEntity(INITIAL_ABSOLUTE_REWARD_SCORE));
+        allRewardScores.setFitness(initializeRewardScoreEntity(INITIAL_RELATIVE_REWARD_SCORE));
+        allRewardScores.setGrowth(initializeRewardScoreEntity(INITIAL_ABSOLUTE_REWARD_SCORE));
+        allRewardScores.setPower(initializeRewardScoreEntity(INITIAL_ABSOLUTE_REWARD_SCORE));
+        return rewardScoresRepository.save(allRewardScores);
     }
 
     /**
@@ -165,15 +202,15 @@ public class RewardService {
      * @param userId                the id of the user
      * @param allRewardScoresEntity the entity to initialize
      */
-    private void initializeHealth(UUID courseId, UUID userId, AllRewardScoresEntity allRewardScoresEntity) {
+    private void initializeHealth(final UUID courseId, final UUID userId, final AllRewardScoresEntity allRewardScoresEntity) {
         try {
-            List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
-            List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
+            final List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
+            final List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
             // Calculate the initial health value for the new entity
-            int initialHealthValue = healthScoreCalculator.calculateInitialHealthValueForNewEntity(contents);
+            final int initialHealthValue = healthScoreCalculator.calculateInitialHealthValueForNewEntity(contents);
             allRewardScoresEntity.setHealth(initializeRewardScoreEntity(initialHealthValue));
-        } catch (CourseServiceClient.CourseServiceConnectionException |
-                 ContentServiceClient.ContentServiceConnectionException e) {
+        } catch (final CourseServiceClient.CourseServiceConnectionException |
+                       ContentServiceClient.ContentServiceConnectionException e) {
             // Handle exceptions by falling back to default values
             allRewardScoresEntity.setHealth(initializeRewardScoreEntity(INITIAL_RELATIVE_REWARD_SCORE));
             //  log the exception for debugging or further analysis
@@ -181,8 +218,14 @@ public class RewardService {
         }
     }
 
-    public RewardScoreEntity initializeRewardScoreEntity(int initialValue) {
-        RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
+    /**
+     * Initializes a reward score entity with the given initial value and an empty log.
+     *
+     * @param initialValue the initial value
+     * @return the initialized entity
+     */
+    public RewardScoreEntity initializeRewardScoreEntity(final int initialValue) {
+        final RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
         rewardScoreEntity.setValue(initialValue);
         rewardScoreEntity.setLog(new ArrayList<>());
         return rewardScoreEntity;
@@ -195,16 +238,17 @@ public class RewardService {
      * @param courseId of the course for which the scoreboard should be retrieved
      * @return scoreboard
      */
-    public List<ScoreboardItem> getScoreboard(UUID courseId) {
-        List<AllRewardScoresEntity> courseRewardScoreEntities = rewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(courseId);
+    public List<ScoreboardItem> getScoreboard(final UUID courseId) {
+        final List<AllRewardScoresEntity> rewardScoresOfCourse = rewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(courseId);
 
-        return courseRewardScoreEntities.stream()
+        return rewardScoresOfCourse.stream()
                 .map(RewardService::createScoreboardItemFromRewardScores)
-                .sorted(Comparator.comparing(ScoreboardItem::getPowerScore).reversed())
+                // sort by power score from highest to lowest
+                .sorted(comparing(ScoreboardItem::getPowerScore).reversed())
                 .toList();
     }
 
-    private static ScoreboardItem createScoreboardItemFromRewardScores(AllRewardScoresEntity rewardScoreEntity) {
+    private static ScoreboardItem createScoreboardItemFromRewardScores(final AllRewardScoresEntity rewardScoreEntity) {
         return new ScoreboardItem(rewardScoreEntity.getId().getUserId(), rewardScoreEntity.getPower().getValue());
     }
 
@@ -214,19 +258,20 @@ public class RewardService {
      * All reward data is then deleted that is connected to deleted course
      *
      * @param changeEvent a Course Change Event received over dapr
+     * @throws IncompleteEventMessageException if the received message is incomplete
      */
-    public void removeRewardData(CourseChangeEvent changeEvent) {
+    public void removeRewardData(final CourseChangeEvent changeEvent) throws IncompleteEventMessageException {
 
         // evaluate course Update message
         if (changeEvent.getCourseId() == null || changeEvent.getOperation() == null) {
-            throw new NullPointerException("incomplete message received: all fields of a message must be non-null");
+            throw new IncompleteEventMessageException("Incomplete message received: all fields of a message must be non-null");
         }
-        //only consider DELETE events
-        if (!changeEvent.getOperation().equals(CrudOperation.DELETE)) {
+        // only consider DELETE events
+        if (changeEvent.getOperation() != CrudOperation.DELETE) {
             return;
         }
 
-        List<AllRewardScoresEntity> entitiesToBeDeleted = rewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(changeEvent.getCourseId());
+        final List<AllRewardScoresEntity> entitiesToBeDeleted = rewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(changeEvent.getCourseId());
 
         rewardScoresRepository.deleteAllInBatch(entitiesToBeDeleted);
 

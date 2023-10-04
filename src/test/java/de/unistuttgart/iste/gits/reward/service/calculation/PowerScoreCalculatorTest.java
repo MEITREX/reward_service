@@ -25,7 +25,7 @@ class PowerScoreCalculatorTest {
      */
     @Test
     void calculateOnContentWorkedOnPowerScore() {
-        UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final UserProgressLogEvent event = UserProgressLogEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(UUID.randomUUID())
                 .correctness(1)
@@ -33,9 +33,9 @@ class PowerScoreCalculatorTest {
                 .success(true)
                 .build();
 
-        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(0);
+        final AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(0);
 
-        RewardScoreEntity power = powerScoreCalculator.calculateOnContentWorkedOn(rewardScoresEntity, List.of(), event);
+        final RewardScoreEntity power = powerScoreCalculator.calculateOnContentWorkedOn(rewardScoresEntity, List.of(), event);
 
         assertThat(power.getValue(), is(24));
     }
@@ -47,16 +47,16 @@ class PowerScoreCalculatorTest {
      */
     @Test
     void powerDecreasesWhenFitnessDecreases() {
-        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(24);
+        final AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(24);
         rewardScoresEntity.setFitness(initializeRewardScoreEntity(0));
 
-        RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, List.of());
+        final RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, List.of());
 
 
         assertThat(power.getValue(), is(22));
         assertThat(power.getLog(), hasSize(1));
 
-        RewardScoreLogEntry logEntry = power.getLog().get(0);
+        final RewardScoreLogEntry logEntry = power.getLog().get(0);
         assertThat(logEntry.getDifference(), is(-2));
         assertThat(logEntry.getOldValue(), is(24));
         assertThat(logEntry.getNewValue(), is(22));
@@ -70,16 +70,15 @@ class PowerScoreCalculatorTest {
      */
     @Test
     void noLogEntryOnNoDifference() {
-        AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(24);
+        final AllRewardScoresEntity rewardScoresEntity = createAllRewardScoresEntityWithPower(24);
 
-        RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, List.of());
-
+        final RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, List.of());
 
         assertThat(power.getValue(), is(24));
         assertThat(power.getLog(), hasSize(0));
     }
 
-    private AllRewardScoresEntity createAllRewardScoresEntityWithPower(int power) {
+    private AllRewardScoresEntity createAllRewardScoresEntityWithPower(final int power) {
         return AllRewardScoresEntity.builder()
                 .health(RewardScoreEntity.builder().value(100).build())
                 .fitness(RewardScoreEntity.builder().value(100).build())
@@ -89,8 +88,8 @@ class PowerScoreCalculatorTest {
                 .build();
     }
 
-    private static RewardScoreEntity initializeRewardScoreEntity(int value) {
-        RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
+    private static RewardScoreEntity initializeRewardScoreEntity(final int value) {
+        final RewardScoreEntity rewardScoreEntity = new RewardScoreEntity();
         rewardScoreEntity.setValue(value);
         rewardScoreEntity.setLog(new ArrayList<>());
         return rewardScoreEntity;
