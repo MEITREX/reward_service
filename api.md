@@ -3,23 +3,23 @@
 <details>
   <summary><strong>Table of Contents</strong></summary>
 
-* [Query](#query)
-* [Mutation](#mutation)
-* [Objects](#objects)
+  * [Query](#query)
+  * [Mutation](#mutation)
+  * [Objects](#objects)
     * [PaginationInfo](#paginationinfo)
     * [RewardLogItem](#rewardlogitem)
     * [RewardScore](#rewardscore)
     * [RewardScores](#rewardscores)
     * [ScoreboardItem](#scoreboarditem)
-* [Inputs](#inputs)
+  * [Inputs](#inputs)
     * [DateTimeFilter](#datetimefilter)
     * [IntFilter](#intfilter)
     * [Pagination](#pagination)
     * [StringFilter](#stringfilter)
-* [Enums](#enums)
+  * [Enums](#enums)
     * [RewardChangeReason](#rewardchangereason)
     * [SortDirection](#sortdirection)
-* [Scalars](#scalars)
+  * [Scalars](#scalars)
     * [Boolean](#boolean)
     * [Date](#date)
     * [DateTime](#datetime)
@@ -34,7 +34,6 @@
 </details>
 
 ## Query
-
 <table>
 <thead>
 <tr>
@@ -52,6 +51,7 @@
 
 
 Get the reward score of the current user for the specified course.
+🔒 The user must have access to the course with the given id to access their scores, otherwise an error is thrown.
 
 </td>
 </tr>
@@ -67,6 +67,7 @@ Get the reward score of the current user for the specified course.
 
 
 Get the reward score of the specified user for the specified course.
+🔒 The user be an admin in the course with the given courseId to perform this action.
 
 </td>
 </tr>
@@ -87,6 +88,7 @@ Get the reward score of the specified user for the specified course.
 
 
 Gets the power scores for each user in the course, ordered by power score descending.
+🔒 The user must have access to the course with the given id to access the scoreboard, otherwise an error is thrown.
 
 </td>
 </tr>
@@ -99,7 +101,6 @@ Gets the power scores for each user in the course, ordered by power score descen
 </table>
 
 ## Mutation
-
 <table>
 <thead>
 <tr>
@@ -115,12 +116,14 @@ Gets the power scores for each user in the course, ordered by power score descen
 <td valign="top"><a href="#rewardscores">RewardScores</a>!</td>
 <td>
 
+
     ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
 
     Triggers the recalculation of the reward score of the user.
     This is done automatically at some time in the night.
 
     The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
+    🔒 The user be an admin in the course with the given courseId to perform this action.
 
 <p>⚠️ <strong>DEPRECATED</strong></p>
 <blockquote>
@@ -146,6 +149,7 @@ Only for testing purposes. Will be removed.
 ## Objects
 
 ### PaginationInfo
+
 
 Return type for information about paginated results.
 
@@ -213,6 +217,7 @@ Whether there is a next page.
 </table>
 
 ### RewardLogItem
+
 
 An item in the reward score log.
 
@@ -291,6 +296,7 @@ The ids of the contents that are associated with the change.
 
 ### RewardScore
 
+
 The reward score of a user.
 
 <table>
@@ -341,6 +347,7 @@ A log of the changes to the reward score, ordered by date descending.
 </table>
 
 ### RewardScores
+
 
 The five reward scores of a user.
 
@@ -409,6 +416,7 @@ A composite score of all the other scores.
 
 ### ScoreboardItem
 
+
 An item in the scoreboard.
 
 <table>
@@ -448,6 +456,7 @@ The power score of the user.
 
 ### DateTimeFilter
 
+
 Filter for date values.
 If multiple filters are specified, they are combined with AND.
 
@@ -484,6 +493,7 @@ If specified, filters for dates before the specified value.
 </table>
 
 ### IntFilter
+
 
 Filter for integer values.
 If multiple filters are specified, they are combined with AND.
@@ -532,6 +542,7 @@ If specified, filters for values less than to the specified value.
 
 ### Pagination
 
+
 Specifies the page size and page number for paginated results.
 
 <table>
@@ -570,6 +581,7 @@ The number of elements per page.
 </table>
 
 ### StringFilter
+
 
 Filter for string values.
 If multiple filters are specified, they are combined with AND.
@@ -619,6 +631,7 @@ If true, the filter is case-insensitive.
 ## Enums
 
 ### RewardChangeReason
+
 
 The reason why the reward score has changed.
 
@@ -682,6 +695,7 @@ Relevant for the power score.
 </table>
 
 ### SortDirection
+
 
 Specifies the sort direction, either ascending or descending.
 

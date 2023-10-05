@@ -1,6 +1,7 @@
 package de.unistuttgart.iste.gits.reward.controller;
 
 import de.unistuttgart.iste.gits.common.user_handling.LoggedInUser;
+import de.unistuttgart.iste.gits.common.user_handling.UserCourseAccessValidator;
 import de.unistuttgart.iste.gits.generated.dto.RewardScores;
 import de.unistuttgart.iste.gits.generated.dto.ScoreboardItem;
 import de.unistuttgart.iste.gits.reward.service.RewardService;
@@ -23,22 +24,26 @@ public class RewardController {
     private final RewardService rewardService;
 
     @QueryMapping
-    public RewardScores userCourseRewardScores(@Argument UUID courseId, @ContextValue LoggedInUser currentUser) {
+    public RewardScores userCourseRewardScores(@Argument final UUID courseId, @ContextValue final LoggedInUser currentUser) {
+        UserCourseAccessValidator.validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, courseId);
         return rewardService.getRewardScores(courseId, currentUser.getId());
     }
 
     @QueryMapping
-    public RewardScores courseRewardScoresForUser(@Argument UUID courseId, @Argument UUID userId) {
+    public RewardScores courseRewardScoresForUser(@Argument final UUID courseId, @Argument final UUID userId, @ContextValue final LoggedInUser currentUser) {
+        UserCourseAccessValidator.validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, courseId);
         return rewardService.getRewardScores(courseId, userId);
     }
 
     @QueryMapping
-    public List<ScoreboardItem> scoreboard(@Argument UUID courseId) {
+    public List<ScoreboardItem> scoreboard(@Argument final UUID courseId, @ContextValue final LoggedInUser currentUser) {
+        UserCourseAccessValidator.validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.STUDENT, courseId);
         return rewardService.getScoreboard(courseId);
     }
 
     @MutationMapping
-    public RewardScores recalculateScores(@Argument UUID courseId, @Argument UUID userId) {
+    public RewardScores recalculateScores(@Argument final UUID courseId, @Argument final UUID userId, @ContextValue final LoggedInUser currentUser) {
+        UserCourseAccessValidator.validateUserHasAccessToCourse(currentUser, LoggedInUser.UserRoleInCourse.ADMINISTRATOR, courseId);
         return rewardService.recalculateScores(courseId, userId);
     }
 }

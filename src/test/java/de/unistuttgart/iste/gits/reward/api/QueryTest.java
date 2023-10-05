@@ -1,6 +1,8 @@
 package de.unistuttgart.iste.gits.reward.api;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
+import de.unistuttgart.iste.gits.common.testutil.InjectCurrentUserHeader;
+import de.unistuttgart.iste.gits.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.gits.generated.dto.ScoreboardItem;
 import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
@@ -14,6 +16,8 @@ import org.springframework.graphql.test.tester.GraphQlTester;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static de.unistuttgart.iste.gits.common.testutil.TestUsers.userWithMembershipInCourseWithId;
+
 @GraphQlApiTest
 class QueryTest {
 
@@ -26,6 +30,11 @@ class QueryTest {
     @Autowired
     RewardService rewardService;
 
+    private final UUID courseId = UUID.randomUUID();
+
+    @InjectCurrentUserHeader
+    private final LoggedInUser loggedInUser = userWithMembershipInCourseWithId(courseId, LoggedInUser.UserRoleInCourse.ADMINISTRATOR);
+
 
     /**
      * Given a user with a rewardScore exist
@@ -34,11 +43,9 @@ class QueryTest {
      */
     @Test
     void testCourseRewardScoresForUser(final GraphQlTester tester) {
-        final UUID courseId = UUID.randomUUID();
-        final UUID user = UUID.randomUUID();
 
         allRewardScoresRepository.save(AllRewardScoresEntity.builder()
-                .id(new AllRewardScoresEntity.PrimaryKey(courseId, user))
+                .id(new AllRewardScoresEntity.PrimaryKey(courseId, loggedInUser.getId()))
                 .health(initializeRewardScoreEntity(100))
                 .strength(initializeRewardScoreEntity(0))
                 .fitness(initializeRewardScoreEntity(100))
@@ -71,7 +78,7 @@ class QueryTest {
 
         tester.document(query)
                 .variable("courseId", courseId)
-                .variable("userId", user)
+                .variable("userId", loggedInUser.getId())
                 .execute()
                 .path("courseRewardScoresForUser.health.value").entity(Integer.class).isEqualTo(100)
                 .path("courseRewardScoresForUser.fitness.value").entity(Integer.class).isEqualTo(100)
@@ -87,7 +94,6 @@ class QueryTest {
      */
     @Test
     void testGetScoreboard(final GraphQlTester tester) {
-        final UUID courseId = UUID.randomUUID();
         final UUID user1 = UUID.randomUUID();
         final UUID user2 = UUID.randomUUID();
 

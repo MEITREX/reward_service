@@ -1,14 +1,17 @@
 type Query {
     """
     Get the reward score of the current user for the specified course.
+    🔒 The user must have access to the course with the given id to access their scores, otherwise an error is thrown.
     """
     userCourseRewardScores(courseId: UUID!): RewardScores!
     """
     Get the reward score of the specified user for the specified course.
+    🔒 The user be an admin in the course with the given courseId to perform this action.
     """
     courseRewardScoresForUser(courseId: UUID!, userId: UUID!): RewardScores!
     """
     Gets the power scores for each user in the course, ordered by power score descending.
+    🔒 The user must have access to the course with the given id to access the scoreboard, otherwise an error is thrown.
     """
     scoreboard(courseId: UUID!): [ScoreboardItem!]!
 }
@@ -21,6 +24,7 @@ type Mutation {
     This is done automatically at some time in the night.
 
     The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
+    🔒 The user be an admin in the course with the given courseId to perform this action.
     """
     recalculateScores(courseId: UUID!, userId: UUID!): RewardScores! @deprecated(reason: "Only for testing purposes. Will be removed.")
 }
