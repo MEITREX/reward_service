@@ -209,8 +209,7 @@ public class RewardService {
             // Calculate the initial health value for the new entity
             final int initialHealthValue = healthScoreCalculator.calculateInitialHealthValueForNewEntity(contents);
             allRewardScoresEntity.setHealth(initializeRewardScoreEntity(initialHealthValue));
-        } catch (final CourseServiceClient.CourseServiceConnectionException |
-                       ContentServiceClient.ContentServiceConnectionException e) {
+        } catch (final Exception e) {
             // Handle exceptions by falling back to default values
             allRewardScoresEntity.setHealth(initializeRewardScoreEntity(INITIAL_RELATIVE_REWARD_SCORE));
             //  log the exception for debugging or further analysis
