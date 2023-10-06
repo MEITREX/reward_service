@@ -1,11 +1,15 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
+import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
-import de.unistuttgart.iste.gits.reward.persistence.entity.*;
+import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreLogEntry;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -25,7 +29,7 @@ class PowerScoreCalculatorTest {
      */
     @Test
     void calculateOnContentWorkedOnPowerScore() {
-        final UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final ContentProgressedEvent event = ContentProgressedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(UUID.randomUUID())
                 .correctness(1)

@@ -81,7 +81,7 @@ class RewardServiceTest {
         final List<UUID> chapterIds = List.of(chapterId1, chapterId2);
         final List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
 
-        final UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final ContentProgressedEvent event = ContentProgressedEvent.builder()
                 .userId(userID)
                 .contentId(contentId)
                 .correctness(1)

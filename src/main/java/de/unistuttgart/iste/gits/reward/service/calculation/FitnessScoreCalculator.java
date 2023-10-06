@@ -1,8 +1,12 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
-import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.entity.*;
+import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.gits.generated.dto.Content;
+import de.unistuttgart.iste.gits.generated.dto.ProgressLogItem;
+import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
+import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreLogEntry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +15,9 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Calculates the fitness score of a user, according the concept documented
@@ -28,9 +34,9 @@ public class FitnessScoreCalculator implements ScoreCalculator {
 
     private static final double FITNESS_MODIFIER_PER_DAY_DEFAULT = 2.0;
 
-    private double maxDecreasePerDay;
+    private final double maxDecreasePerDay;
 
-    private double fitnessModifierPerDay;
+    private final double fitnessModifierPerDay;
 
     /**
      * Creates a new instance.
@@ -77,7 +83,7 @@ public class FitnessScoreCalculator implements ScoreCalculator {
     }
 
     @Override
-    public RewardScoreEntity calculateOnContentWorkedOn(final AllRewardScoresEntity allRewardScores, final List<Content> contents, final UserProgressLogEvent event) {
+    public RewardScoreEntity calculateOnContentWorkedOn(final AllRewardScoresEntity allRewardScores, final List<Content> contents, final ContentProgressedEvent event) {
         final RewardScoreEntity fitnessEntity = allRewardScores.getFitness();
         final int oldScore = fitnessEntity.getValue();
 
@@ -157,7 +163,7 @@ public class FitnessScoreCalculator implements ScoreCalculator {
         return contents.stream().map(Content::getId).toList();
     }
 
-    private Content getContentOfEvent(final List<Content> contents, final UserProgressLogEvent event) {
+    private Content getContentOfEvent(final List<Content> contents, final ContentProgressedEvent event) {
         return contents.stream()
                 .filter(content -> content.getId().equals(event.getContentId()))
                 .findFirst()
@@ -239,7 +245,7 @@ public class FitnessScoreCalculator implements ScoreCalculator {
     private double calculateFitnessRegeneration(final double fitness,
                                                 final int contentsToRepeat,
                                                 final ProgressLogItem progressLogItem,
-                                                final UserProgressLogEvent event) {
+                                                final ContentProgressedEvent event) {
 
         final double correctnessBefore = progressLogItem.getCorrectness();
         final double correctnessAfter = event.getCorrectness();

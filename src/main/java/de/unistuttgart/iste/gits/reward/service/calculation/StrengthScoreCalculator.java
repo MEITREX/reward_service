@@ -1,6 +1,6 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
+import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
@@ -17,12 +17,12 @@ import java.util.List;
 @Component
 public class StrengthScoreCalculator implements ScoreCalculator {
     @Override
-    public RewardScoreEntity recalculateScore(AllRewardScoresEntity allRewardScores, List<Content> contents) {
+    public RewardScoreEntity recalculateScore(final AllRewardScoresEntity allRewardScores, final List<Content> contents) {
         return allRewardScores.getStrength();
     }
 
     @Override
-    public RewardScoreEntity calculateOnContentWorkedOn(AllRewardScoresEntity allRewardScores, List<Content> contents, UserProgressLogEvent event) {
+    public RewardScoreEntity calculateOnContentWorkedOn(final AllRewardScoresEntity allRewardScores, final List<Content> contents, final ContentProgressedEvent event) {
         return allRewardScores.getStrength();
     }
 }
