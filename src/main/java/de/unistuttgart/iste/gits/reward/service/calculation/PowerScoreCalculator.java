@@ -63,11 +63,13 @@ public class PowerScoreCalculator implements ScoreCalculator {
     }
 
     private RewardScoreEntity calculatePowerScore(final AllRewardScoresEntity allRewardScores) {
+        log.debug("Calculating power score");
         final int growth = allRewardScores.getGrowth().getValue();
         final int strength = allRewardScores.getStrength().getValue();
         final int health = allRewardScores.getHealth().getValue();
         final int fitness = allRewardScores.getFitness().getValue();
         final int oldPower = allRewardScores.getPower().getValue();
+        log.debug("Old power score: {}", oldPower);
 
         // health and fitness are between 0 and 100,
         // so we divide by 100 to get a value between 0 and 1
@@ -76,6 +78,8 @@ public class PowerScoreCalculator implements ScoreCalculator {
 
         final double powerValue = (growth + strength) * (1 + healthFitnessMultiplier * healthFitnessFactor);
         final int powerRounded = (int) Math.round(powerValue);
+
+        log.debug("New power score: {}", powerRounded);
 
         final int difference = powerRounded - oldPower;
         if (difference == 0) {

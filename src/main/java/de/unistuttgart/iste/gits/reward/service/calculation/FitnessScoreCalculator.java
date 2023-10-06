@@ -56,12 +56,16 @@ public class FitnessScoreCalculator implements ScoreCalculator {
 
     @Override
     public RewardScoreEntity recalculateScore(final AllRewardScoresEntity allRewardScores, final List<Content> contents) {
+        log.debug("Recalculating fitness score");
+
         final RewardScoreEntity fitnessEntity = allRewardScores.getFitness();
         final int oldScore = fitnessEntity.getValue();
+        log.debug("Old fitness score: {}", oldScore);
 
         final double fitnessDecrease = calculateFitnessDecrease(contents);
         final double newFitnessScore = Math.max(FITNESS_MIN, oldScore - fitnessDecrease);
         final int newFitnessRounded = (int) Math.round(newFitnessScore);
+        log.debug("New fitness score: {}", newFitnessRounded);
 
         if (newFitnessRounded - oldScore == 0) {
             // no change in fitness score, so no log entry is created
@@ -80,19 +84,26 @@ public class FitnessScoreCalculator implements ScoreCalculator {
     public RewardScoreEntity calculateOnContentWorkedOn(final AllRewardScoresEntity allRewardScores,
                                                         final List<Content> contents,
                                                         final UserProgressUpdatedEvent event) {
+        log.debug("Calculating fitness score");
+
         final RewardScoreEntity fitnessEntity = allRewardScores.getFitness();
         final int oldScore = fitnessEntity.getValue();
 
         final Content content = getContentOfEvent(contents, event);
         final List<Content> contentsDueForReview = getContentsToRepeat(contents);
+        log.debug("Contents to repeat: {}", contentsDueForReview);
 
         final Optional<ProgressLogItem> latestReview = getLatestReviewExcludingTriggerOfEvent(content);
         if (latestReview.isEmpty()) {
             // it is the first review of the content, so only health score is affected
+            log.debug("Content {} was reviewed for the first time", content.getId());
             return fitnessEntity;
         }
 
-        final double fitnessRegen = calculateFitnessRegeneration(oldScore, contentsDueForReview.size(), latestReview.get(), event);
+        final double fitnessRegen = calculateFitnessRegeneration(oldScore,
+                contentsDueForReview.size(),
+                latestReview.get(),
+                event);
 
         if (fitnessRegen == 0
             || !event.isSuccess()
@@ -104,6 +115,7 @@ public class FitnessScoreCalculator implements ScoreCalculator {
         }
 
         final int newFitnessScore = getNewFitnessScore(oldScore, fitnessRegen, content);
+        log.debug("New fitness score: {}", newFitnessScore);
 
         final RewardScoreLogEntry logEntry = createLogEntryOnContentReviewed(oldScore, newFitnessScore, event.getContentId());
 

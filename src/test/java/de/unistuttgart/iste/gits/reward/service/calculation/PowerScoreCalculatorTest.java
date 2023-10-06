@@ -52,7 +52,6 @@ class PowerScoreCalculatorTest {
 
         final RewardScoreEntity power = powerScoreCalculator.recalculateScore(rewardScoresEntity, List.of());
 
-
         assertThat(power.getValue(), is(22));
         assertThat(power.getLog(), hasSize(1));
 

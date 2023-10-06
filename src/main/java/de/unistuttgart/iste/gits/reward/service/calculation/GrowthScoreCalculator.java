@@ -4,6 +4,7 @@ import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
 import de.unistuttgart.iste.gits.reward.persistence.entity.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -15,10 +16,13 @@ import java.util.UUID;
  * <a href="https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/Scoring%20System.html#growth">here</a>.
  */
 @Component
+@Slf4j
 public class GrowthScoreCalculator implements ScoreCalculator {
     @Override
     public RewardScoreEntity recalculateScore(final AllRewardScoresEntity allRewardScores,
                                               final List<Content> contents) {
+        log.debug("Recalculating growth score for user {} in course {}",
+                allRewardScores.getId().getUserId(), allRewardScores.getId().getCourseId());
         // growth score is not affected by recalculation
         // it is only affected by content worked on
         return allRewardScores.getGrowth();
@@ -28,10 +32,19 @@ public class GrowthScoreCalculator implements ScoreCalculator {
     public RewardScoreEntity calculateOnContentWorkedOn(final AllRewardScoresEntity allRewardScores,
                                                         final List<Content> contents,
                                                         final UserProgressUpdatedEvent event) {
+        log.debug("Calculating growth score for user {} in course {}",
+                allRewardScores.getId().getUserId(), allRewardScores.getId().getCourseId());
+        log.debug("Content worked on: {}", event.getContentId());
+        log.debug("Content list: {}", contents);
+
         final RewardScoreEntity growthEntity = allRewardScores.getGrowth();
         final int oldScore = growthEntity.getValue();
         final int currentScore = calculateCurrentGrowth(contents);
         final int totalScore = getTotalAchievableGrowth(contents);
+
+        log.debug("Old growth score: {}", oldScore);
+        log.debug("Current growth score calculated: {}", currentScore);
+        log.debug("Total achievable growth score: {}", totalScore);
 
         final int diff = currentScore - oldScore;
 

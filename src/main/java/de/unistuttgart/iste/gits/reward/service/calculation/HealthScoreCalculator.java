@@ -66,15 +66,20 @@ public class HealthScoreCalculator implements ScoreCalculator {
     @Override
     public RewardScoreEntity recalculateScore(final AllRewardScoresEntity allRewardScores,
                                               final List<Content> contents) {
+        log.debug("Recalculating health score");
+
         final RewardScoreEntity healthEntity = allRewardScores.getHealth();
         final int oldScore = healthEntity.getValue();
+        log.debug("Old health score: {}", oldScore);
 
         final OffsetDateTime today = OffsetDateTime.now();
 
         final List<Content> newDueContents = getDueContentsThatWereNeverWorked(contents, today);
+        log.debug("New due contents: {}", newDueContents);
 
         final int diff = calculateHealthDecrease(newDueContents, today);
         final int newScore = Math.max(HEALTH_MIN, oldScore - diff);
+        log.debug("New health score: {}", newScore);
 
         if (newScore - oldScore == 0) {
             // no change in health score, so no log entry is created
@@ -94,9 +99,14 @@ public class HealthScoreCalculator implements ScoreCalculator {
             final AllRewardScoresEntity allRewardScoresEntity,
             final List<Content> contents,
             final UserProgressUpdatedEvent event) {
+        log.debug("Calculating health score");
+        log.debug("Content worked on: {}", event.getContentId());
+        log.debug("Content list: {}", contents);
+
         final RewardScoreEntity rewardScore = allRewardScoresEntity.getHealth();
 
         final int oldScore = rewardScore.getValue();
+        log.debug("Old health score: {}", oldScore);
         final int diffToFull = HEALTH_MAX - oldScore;
 
         if (diffToFull == 0) {
@@ -106,6 +116,7 @@ public class HealthScoreCalculator implements ScoreCalculator {
         final OffsetDateTime today = OffsetDateTime.now();
 
         final List<Content> newDueContents = getDueContentsThatWereNeverWorked(contents, today);
+        log.debug("New due contents: {}", newDueContents);
         int numberOfNewDueContentsBefore = newDueContents.size();
 
         // in case that the content list does not contain the content of the event
@@ -116,6 +127,7 @@ public class HealthScoreCalculator implements ScoreCalculator {
 
         final int healthIncrease = diffToFull / numberOfNewDueContentsBefore;
         final int newValue = Math.min(oldScore + healthIncrease, HEALTH_MAX);
+        log.debug("New health score: {}", newValue);
 
         final RewardScoreLogEntry logEntry = createLogEntryOnContentWorkedOn(today, oldScore, newValue, event.getContentId());
 
