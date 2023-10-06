@@ -203,9 +203,7 @@ public class RewardService {
      * @param allRewardScoresEntity the entity to initialize
      */
     private void initializeHealth(final UUID courseId, final UUID userId, final AllRewardScoresEntity allRewardScoresEntity) {
-        allRewardScoresEntity.setHealth(initializeRewardScoreEntity(INITIAL_RELATIVE_REWARD_SCORE));
-
-        /*try {
+        try {
             final List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
             final List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
             // Calculate the initial health value for the new entity
@@ -217,7 +215,7 @@ public class RewardService {
             allRewardScoresEntity.setHealth(initializeRewardScoreEntity(INITIAL_RELATIVE_REWARD_SCORE));
             //  log the exception for debugging or further analysis
             log.error("An error occurred while initializing reward scores:", e);
-        }*/
+        }
     }
 
     /**
