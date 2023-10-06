@@ -2,6 +2,8 @@ package de.unistuttgart.iste.gits.reward.service;
 
 import de.unistuttgart.iste.gits.common.event.*;
 import de.unistuttgart.iste.gits.common.exception.IncompleteEventMessageException;
+import de.unistuttgart.iste.gits.content_service.client.ContentServiceClient;
+import de.unistuttgart.iste.gits.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
@@ -21,25 +23,23 @@ class RewardServiceTest {
 
     private final AllRewardScoresRepository allRewardScoresRepository = mock(AllRewardScoresRepository.class);
     private final RewardScoreMapper rewardScoreMapper = mock(RewardScoreMapper.class);
-    private final CourseServiceClient courseServiceClient = mock(CourseServiceClient.class);
-    private final ContentServiceClient contentServiceClient = mock(ContentServiceClient.class);
     private final HealthScoreCalculator healthScoreCalculator = mock(HealthScoreCalculator.class);
     private final FitnessScoreCalculator fitnessScoreCalculator = mock(FitnessScoreCalculator.class);
     private final StrengthScoreCalculator strengthScoreCalculator = mock(StrengthScoreCalculator.class);
     private final PowerScoreCalculator powerScoreCalculator = mock(PowerScoreCalculator.class);
     private final GrowthScoreCalculator growthScoreCalculator = mock(GrowthScoreCalculator.class);
 
+    private final ContentServiceClient contentServiceClient = mock(ContentServiceClient.class);
 
     private final RewardService rewardService = new RewardService(
             allRewardScoresRepository,
             rewardScoreMapper,
-            courseServiceClient,
-            contentServiceClient,
             healthScoreCalculator,
             fitnessScoreCalculator,
             strengthScoreCalculator,
             powerScoreCalculator,
-            growthScoreCalculator);
+            growthScoreCalculator,
+            contentServiceClient);
 
     /**
      * Given a courseId and userID
@@ -68,22 +68,21 @@ class RewardServiceTest {
      * Then update the rewardScores and return it
      */
     @Test
-    void testCalculateScoresOnContentWorkedOn() {
+    void testCalculateScoresOnContentWorkedOn() throws ContentServiceConnectionException {
         final UUID contentId = UUID.randomUUID();
         final UUID courseId = UUID.randomUUID();
         final UUID userID = UUID.randomUUID();
-        final UUID chapterId1 = UUID.randomUUID();
-        final UUID chapterId2 = UUID.randomUUID();
 
         final AllRewardScoresEntity.PrimaryKey primaryKey = new AllRewardScoresEntity.PrimaryKey(courseId, userID);
 
         final UserProgressData progressData = UserProgressData.builder().build();
-        final List<UUID> chapterIds = List.of(chapterId1, chapterId2);
         final List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
 
-        final ContentProgressedEvent event = ContentProgressedEvent.builder()
+        final UserProgressUpdatedEvent event = UserProgressUpdatedEvent.builder()
                 .userId(userID)
                 .contentId(contentId)
+                .courseId(courseId)
+                .chapterId(UUID.randomUUID())
                 .correctness(1)
                 .hintsUsed(0)
                 .success(true)
@@ -100,9 +99,7 @@ class RewardServiceTest {
 
         when(allRewardScoresRepository.findById(primaryKey)).thenReturn(Optional.ofNullable(allRewardScoresEntity));
         when(allRewardScoresRepository.save(any())).thenReturn(allRewardScoresEntity);
-        when(courseServiceClient.getCourseIdForContent(event.getContentId())).thenReturn(courseId);
-        when(courseServiceClient.getChapterIds(courseId)).thenReturn(chapterIds);
-        when(contentServiceClient.getContentsWithUserProgressData(userID, chapterIds)).thenReturn(contents);
+        when(contentServiceClient.queryContentsOfCourse(userID, courseId)).thenReturn(contents);
         when(rewardScoreMapper.entityToDto(allRewardScoresEntity)).thenReturn(expectedRewardScores);
 
         final RewardScores rewardScores = rewardService.calculateScoresOnContentWorkedOn(event);
@@ -110,9 +107,7 @@ class RewardServiceTest {
         assertThat(rewardScores, is(expectedRewardScores));
         verify(allRewardScoresRepository).save(any());
         verify(allRewardScoresRepository).findById(primaryKey);
-        verify(courseServiceClient).getCourseIdForContent(contentId);
-        verify(courseServiceClient).getChapterIds(courseId);
-        verify(contentServiceClient).getContentsWithUserProgressData(userID, chapterIds);
+        verify(contentServiceClient).queryContentsOfCourse(userID, courseId);
         verify(rewardScoreMapper).entityToDto(allRewardScoresEntity);
 
     }
@@ -123,7 +118,7 @@ class RewardServiceTest {
      * Then update the rewardScores and return it
      */
     @Test
-    void testRecalculateScores() {
+    void testRecalculateScores() throws ContentServiceConnectionException {
         final UUID courseId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
         final UUID contentId = UUID.randomUUID();
@@ -133,7 +128,6 @@ class RewardServiceTest {
         final UserProgressData progressData = UserProgressData.builder().build();
         final AllRewardScoresEntity allRewardScoresEntity = dummyAllRewardScoresBuilder(courseId, userId).build();
         final AllRewardScoresEntity.PrimaryKey primaryKey = new AllRewardScoresEntity.PrimaryKey(courseId, userId);
-        final List<UUID> chapterIds = List.of(chapterId1, chapterId2);
         final List<Content> contents = List.of(createContentWithUserData(contentId, progressData));
 
         final RewardScores expectedRewardScores = new RewardScores(
@@ -145,8 +139,7 @@ class RewardServiceTest {
 
         when(allRewardScoresRepository.findById(primaryKey)).thenReturn(Optional.ofNullable(allRewardScoresEntity));
         when(allRewardScoresRepository.save(any())).thenReturn(allRewardScoresEntity);
-        when(courseServiceClient.getChapterIds(courseId)).thenReturn(chapterIds);
-        when(contentServiceClient.getContentsWithUserProgressData(userId, chapterIds)).thenReturn(contents);
+        when(contentServiceClient.queryContentsOfCourse(userId, courseId)).thenReturn(contents);
         when(rewardScoreMapper.entityToDto(allRewardScoresEntity)).thenReturn(expectedRewardScores);
 
         final RewardScores rewardScores = rewardService.recalculateScores(courseId, userId);
@@ -154,8 +147,7 @@ class RewardServiceTest {
         assertThat(rewardScores, is(expectedRewardScores));
         verify(allRewardScoresRepository).findById(primaryKey);
         verify(allRewardScoresRepository).save(any());
-        verify(courseServiceClient).getChapterIds(courseId);
-        verify(contentServiceClient).getContentsWithUserProgressData(userId, chapterIds);
+        verify(contentServiceClient).queryContentsOfCourse(userId, courseId);
         verify(rewardScoreMapper).entityToDto(allRewardScoresEntity);
 
     }

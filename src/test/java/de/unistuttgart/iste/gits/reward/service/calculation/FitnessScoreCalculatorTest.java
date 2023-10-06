@@ -1,16 +1,12 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
-import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreLogEntry;
+import de.unistuttgart.iste.gits.reward.persistence.entity.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -239,7 +235,7 @@ class FitnessScoreCalculatorTest {
                                         .build())) // not learned successfully yet
                                 .build())
         );
-        final ContentProgressedEvent event = ContentProgressedEvent.builder()
+        final UserProgressUpdatedEvent event = UserProgressUpdatedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -295,7 +291,7 @@ class FitnessScoreCalculatorTest {
                                         .build())) // not learned successfully yet
                                 .build())
         );
-        final ContentProgressedEvent event = ContentProgressedEvent.builder()
+        final UserProgressUpdatedEvent event = UserProgressUpdatedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -333,7 +329,7 @@ class FitnessScoreCalculatorTest {
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
-        final ContentProgressedEvent event = ContentProgressedEvent.builder()
+        final UserProgressUpdatedEvent event = UserProgressUpdatedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(0.5)
@@ -371,7 +367,7 @@ class FitnessScoreCalculatorTest {
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
-        final ContentProgressedEvent event = ContentProgressedEvent.builder()
+        final UserProgressUpdatedEvent event = UserProgressUpdatedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -419,7 +415,7 @@ class FitnessScoreCalculatorTest {
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
-        final ContentProgressedEvent event = ContentProgressedEvent.builder()
+        final UserProgressUpdatedEvent event = UserProgressUpdatedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -462,7 +458,7 @@ class FitnessScoreCalculatorTest {
                         .setLog(logWithOneSuccessfulEntry())
                         .build())
         );
-        ContentProgressedEvent event = ContentProgressedEvent.builder()
+        UserProgressUpdatedEvent event = UserProgressUpdatedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1.0) // increase correctness by 50%
@@ -476,7 +472,7 @@ class FitnessScoreCalculatorTest {
         assertThat(fitness.getLog(), hasSize(1));
 
         allRewardScores = createAllRewardScoresEntityWithFitnessOf(0);
-        event = ContentProgressedEvent.builder()
+        event = UserProgressUpdatedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(0.0) // decrease correctness by 50%

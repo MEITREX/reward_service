@@ -1,11 +1,9 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
-import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
-import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreLogEntry;
+import de.unistuttgart.iste.gits.reward.persistence.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -95,7 +93,7 @@ public class HealthScoreCalculator implements ScoreCalculator {
     public RewardScoreEntity calculateOnContentWorkedOn(
             final AllRewardScoresEntity allRewardScoresEntity,
             final List<Content> contents,
-            final ContentProgressedEvent event) {
+            final UserProgressUpdatedEvent event) {
         final RewardScoreEntity rewardScore = allRewardScoresEntity.getHealth();
 
         final int oldScore = rewardScore.getValue();

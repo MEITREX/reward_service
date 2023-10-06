@@ -1,6 +1,6 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
@@ -31,5 +31,5 @@ public interface ScoreCalculator {
      */
     RewardScoreEntity calculateOnContentWorkedOn(AllRewardScoresEntity allRewardScores,
                                                  List<Content> contents,
-                                                 ContentProgressedEvent event);
+                                                 UserProgressUpdatedEvent event);
 }

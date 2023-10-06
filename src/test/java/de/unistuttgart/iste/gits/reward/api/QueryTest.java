@@ -7,7 +7,6 @@ import de.unistuttgart.iste.gits.generated.dto.ScoreboardItem;
 import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
 import de.unistuttgart.iste.gits.reward.persistence.repository.AllRewardScoresRepository;
-import de.unistuttgart.iste.gits.reward.service.CourseServiceClient;
 import de.unistuttgart.iste.gits.reward.service.RewardService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +22,6 @@ class QueryTest {
 
     @Autowired
     AllRewardScoresRepository allRewardScoresRepository;
-
-    @Autowired
-    CourseServiceClient courseServiceClient;
 
     @Autowired
     RewardService rewardService;
