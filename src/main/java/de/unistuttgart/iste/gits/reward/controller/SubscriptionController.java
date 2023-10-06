@@ -1,16 +1,14 @@
 package de.unistuttgart.iste.gits.reward.controller;
 
-import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.gits.common.event.CourseChangeEvent;
+import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.gits.generated.dto.RewardScores;
 import de.unistuttgart.iste.gits.reward.service.RewardService;
 import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -25,7 +23,7 @@ public class SubscriptionController {
      */
     @Topic(name = "user-progress-updated", pubsubName = "gits")
     @PostMapping(path = "/reward-service/user-progress-pubsub")
-    public Mono<RewardScores> onUserProgress(final CloudEvent<ContentProgressedEvent> cloudEvent) {
+    public Mono<RewardScores> onUserProgress(final CloudEvent<UserProgressUpdatedEvent> cloudEvent) {
         log.info("Received event: {}", cloudEvent.getData());
         return Mono.fromCallable(() -> {
             try {

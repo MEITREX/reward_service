@@ -1,11 +1,9 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.RewardChangeReason;
-import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
-import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
-import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreLogEntry;
+import de.unistuttgart.iste.gits.reward.persistence.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -29,7 +27,7 @@ public class GrowthScoreCalculator implements ScoreCalculator {
     @Override
     public RewardScoreEntity calculateOnContentWorkedOn(final AllRewardScoresEntity allRewardScores,
                                                         final List<Content> contents,
-                                                        final ContentProgressedEvent event) {
+                                                        final UserProgressUpdatedEvent event) {
         final RewardScoreEntity growthEntity = allRewardScores.getGrowth();
         final int oldScore = growthEntity.getValue();
         final int currentScore = calculateCurrentGrowth(contents);
