@@ -139,7 +139,7 @@ public class RewardService {
      * @param event the event that triggered the calculation
      * @return the new reward scores
      */
-    public RewardScores calculateScoresOnContentWorkedOn(final UserProgressLogEvent event) {
+    public RewardScores calculateScoresOnContentWorkedOn(final ContentProgressedEvent event) {
         final UUID courseId = courseServiceClient.getCourseIdForContent(event.getContentId());
 
         AllRewardScoresEntity allRewardScoresEntity = getAllRewardScoresEntity(courseId, event.getUserId());
@@ -159,7 +159,7 @@ public class RewardService {
         return mapper.entityToDto(allRewardScoresEntity);
     }
 
-    private void calculateNewScoresOnContentWorkedOn(final UserProgressLogEvent event,
+    private void calculateNewScoresOnContentWorkedOn(final ContentProgressedEvent event,
                                                      final AllRewardScoresEntity allRewardScoresEntity,
                                                      final List<Content> contents) {
         allRewardScoresEntity.setHealth(healthScoreCalculator

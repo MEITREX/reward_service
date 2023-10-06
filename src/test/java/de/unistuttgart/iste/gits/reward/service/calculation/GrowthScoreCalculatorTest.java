@@ -1,12 +1,17 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
-import de.unistuttgart.iste.gits.generated.dto.*;
+import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
+import de.unistuttgart.iste.gits.generated.dto.Content;
+import de.unistuttgart.iste.gits.generated.dto.ContentMetadata;
+import de.unistuttgart.iste.gits.generated.dto.MediaContent;
+import de.unistuttgart.iste.gits.generated.dto.UserProgressData;
 import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
 import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,7 +33,7 @@ class GrowthScoreCalculatorTest {
         final Content content3 = dummyContent(20, true);
 
         final List<Content> contentList = List.of(content1, content2, content3);
-        final UserProgressLogEvent progressLogEvent1 = UserProgressLogEvent.builder()
+        final ContentProgressedEvent progressLogEvent1 = ContentProgressedEvent.builder()
                 .contentId(content1.getId())
                 .build();
 

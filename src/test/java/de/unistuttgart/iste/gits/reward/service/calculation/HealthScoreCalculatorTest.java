@@ -1,12 +1,17 @@
 package de.unistuttgart.iste.gits.reward.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
+import de.unistuttgart.iste.gits.common.event.ContentProgressedEvent;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.reward.persistence.entity.*;
+import de.unistuttgart.iste.gits.reward.persistence.entity.AllRewardScoresEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreEntity;
+import de.unistuttgart.iste.gits.reward.persistence.entity.RewardScoreLogEntry;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -137,7 +142,7 @@ class HealthScoreCalculatorTest {
         final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder().build(), 1)
         );
-        final UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final ContentProgressedEvent event = ContentProgressedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
@@ -171,7 +176,7 @@ class HealthScoreCalculatorTest {
         final List<Content> contents = List.of(
                 createContentWithUserData(contentId, UserProgressData.builder().build(), 1)
         );
-        final UserProgressLogEvent event = UserProgressLogEvent.builder()
+        final ContentProgressedEvent event = ContentProgressedEvent.builder()
                 .userId(UUID.randomUUID())
                 .contentId(contentId)
                 .correctness(1)
