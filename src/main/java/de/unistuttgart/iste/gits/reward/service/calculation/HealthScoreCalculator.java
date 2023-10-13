@@ -125,8 +125,8 @@ public class HealthScoreCalculator implements ScoreCalculator {
             numberOfNewDueContentsBefore++;
         }
 
-        final int healthIncrease = diffToFull / numberOfNewDueContentsBefore;
-        final int newValue = Math.min(oldScore + healthIncrease, HEALTH_MAX);
+        final double healthIncrease = Math.round((double) diffToFull / numberOfNewDueContentsBefore);
+        final int newValue = (int) Math.min(oldScore + healthIncrease, HEALTH_MAX);
         log.debug("New health score: {}", newValue);
 
         final RewardScoreLogEntry logEntry = createLogEntryOnContentWorkedOn(today, oldScore, newValue, event.getContentId());

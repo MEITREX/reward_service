@@ -122,8 +122,6 @@ class RewardServiceTest {
         final UUID courseId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
         final UUID contentId = UUID.randomUUID();
-        final UUID chapterId1 = UUID.randomUUID();
-        final UUID chapterId2 = UUID.randomUUID();
 
         final UserProgressData progressData = UserProgressData.builder().build();
         final AllRewardScoresEntity allRewardScoresEntity = dummyAllRewardScoresBuilder(courseId, userId).build();
@@ -226,6 +224,7 @@ class RewardServiceTest {
 
         // verify that the repository was called
         verify(allRewardScoresRepository, times(1)).findAllRewardScoresEntitiesById_CourseId(courseId);
+        verify(allRewardScoresRepository, times(1)).deleteAll(rewardScoresEntities);
     }
 
     private static AllRewardScoresEntity.AllRewardScoresEntityBuilder dummyAllRewardScoresBuilder(final UUID courseId, final UUID userId) {
@@ -240,7 +239,7 @@ class RewardServiceTest {
     }
 
     @Test
-    void testInvalidCourseEventInput(){
+    void testInvalidCourseEventInput() {
         final CourseChangeEvent noCourseIdEvent = CourseChangeEvent.builder().operation(CrudOperation.DELETE).build();
         final CourseChangeEvent noOperationEvent = CourseChangeEvent.builder().courseId(UUID.randomUUID()).build();
 
@@ -250,6 +249,7 @@ class RewardServiceTest {
 
         // verify that the repository was called
         verify(allRewardScoresRepository, never()).findAllRewardScoresEntitiesById_CourseId(any());
+        verify(allRewardScoresRepository, never()).deleteAll(any());
 
     }
 
@@ -269,6 +269,7 @@ class RewardServiceTest {
 
         // verify that the repository was called
         verify(allRewardScoresRepository, never()).findAllRewardScoresEntitiesById_CourseId(any());
+        verify(allRewardScoresRepository, never()).deleteAll(any());
     }
 
     private static RewardScoreEntity initializeRewardScoreEntity(final int initialValue) {

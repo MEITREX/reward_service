@@ -269,6 +269,6 @@ public class RewardService {
 
         final List<AllRewardScoresEntity> entitiesToBeDeleted = rewardScoresRepository.findAllRewardScoresEntitiesById_CourseId(changeEvent.getCourseId());
 
-        rewardScoresRepository.deleteAllInBatch(entitiesToBeDeleted);
+        rewardScoresRepository.deleteAll(entitiesToBeDeleted);
     }
 }
