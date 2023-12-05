@@ -12,7 +12,7 @@ The service manages five types of reward scores: Health, Fitness, Growth, Streng
 
 5. **Power Score:** Represents a composite value of other reward properties, enabling student ranking based on overall performance.
 
-For more details about the Reward Service Scoring System, please refer to the [documentation](https://gits-enpro.readthedocs.io/en/latest/dev-manuals/gamification/Scoring%20System.html).
+For more details about the Reward Service Scoring System, please refer to the [documentation](https://meitrex.readthedocs.io/en/latest/dev-manuals/gamification/Scoring%20System.html).
 
 ## Environment variables
 
@@ -56,6 +56,6 @@ The endpoint for the GraphQL API is `/graphql`. The GraphQL Playground is availa
 ## Get started
 
 A guide how to start development can be
-found in the [wiki](https://gits-enpro.readthedocs.io/en/latest/dev-manuals/backend/get-started.html).
+found in the [wiki](https://meitrex.readthedocs.io/en/latest/dev-manuals/backend/get-started.html).
 
 

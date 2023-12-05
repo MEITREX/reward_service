@@ -1,13 +1,13 @@
 rootProject.name = 'reward_service'
 
 sourceControl {
-    gitRepository(uri('https://github.com/IT-REX-Platform/gits-common')) {
+    gitRepository(uri('https://github.com/MEITREX/common')) {
         producesModule('de.unistuttgart.iste.gits:gits-common')
     }
-    gitRepository(uri('https://github.com/IT-REX-Platform/gits-common-test')) {
+    gitRepository(uri('https://github.com/MEITREX/common_test')) {
         producesModule('de.unistuttgart.iste.gits:gits-common-test')
     }
-    gitRepository(uri('https://github.com/IT-REX-Platform/content_service')) {
+    gitRepository(uri('https://github.com/MEITREX/content_service')) {
         producesModule('de.unistuttgart.iste.gits:content_service')
     }
 }

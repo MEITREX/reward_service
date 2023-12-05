@@ -15,18 +15,18 @@ In case of manual test, please document the test well including a set of user in
 ## Checklist before requesting a review
 
 - [ ] My code is easy to understand
-- [ ] My code follows the [coding guidelines](https://github.com/IT-REX-Platform/wiki/blob/main/dev-manuals/backend/coding-guidelines.md) of this project
+- [ ] My code follows the [coding guidelines](https://github.com/MEITREX/wiki/blob/main/dev-manuals/backend/coding-guidelines.md) of this project
 - [ ] My code fulfills all acceptance criteria
 - [ ] The test coverage (line and branch) is reasonably high, especially on Service classes and other classes with complex logic
 - [ ] I have made corresponding changes to the documentation or
-  the [wiki/adr](https://github.com/IT-REX-Platform/wiki/tree/main/adr)
+  the [wiki/adr](https://github.com/MEITREX/wiki/tree/main/adr)
 - [ ] I made no breaking changes in the database schema or if so, I will perform a database migration
 
 ## Checklist for reviewer
 
 - The code is easy to understand
 - The code follows
-  the [coding guidelines](https://github.com/IT-REX-Platform/wiki/blob/main/dev-manuals/backend/coding-guidelines.md) of
+  the [coding guidelines](https://github.com/MEITREX/wiki/blob/main/dev-manuals/backend/coding-guidelines.md) of
   this project
 - The code is tested or if not, the reason is documented or discussed
 - The added and existing tests reasonably cover the code change
