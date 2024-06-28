@@ -26,7 +26,27 @@ sonarqube {
     property("sonar.organization", "meitrex")
     property("sonar.host.url", "https://sonarcloud.io")
   }
+}
 
+// workaround to fetch schema files from external repositories
+// as gradle only supports java dependencies
+def fetchFilesFromRepo(String repository, List<String> files) {
+	def baseurl = "https://raw.githubusercontent.com/MEITREX/"
+	def fileUrl = "${baseurl}${repository}/main/src/main/resources/graphql/"
+	def outputDir = "src/main/resources/graphql"
+
+	files.each { file ->
+		tasks.register("fetchExternalSchema-${file.capitalize()}", Exec) {
+			commandLine 'curl', "${fileUrl}${file}", '-o', "${outputDir}/${repository}/${file}"
+		}
+	}
+}
+
+fetchFilesFromRepo("common", ["directives.graphqls", "scalars.graphqls", "sortFilterPagination.graphqls"])
+
+// run this task to fetch the latest schema files from the external github repositories
+tasks.register("fetchAllExternalSchemas", Task) {
+	dependsOn tasks.matching { it.name.startsWith("fetchExternalSchema-") }
 }
 
 // Automatically generate DTOs from GraphQL schema:
@@ -48,6 +68,7 @@ graphqlCodegen {
 	]
 	generateEqualsAndHashCode = true
 	generateToString = true
+	fieldsWithResolvers = ["@OnDemand"]
 }
 
 // Automatically generate GraphQL code on project build:

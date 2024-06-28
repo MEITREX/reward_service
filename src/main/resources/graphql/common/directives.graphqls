@@ -15,3 +15,9 @@ directive @PositiveOrZero(message : String = "graphql.validation.PositiveOrZero.
 directive @Range(min : Int = 0, max : Int = 2147483647, message : String = "graphql.validation.Range.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 directive @Size(min : Int = 0, max : Int = 2147483647, message : String = "graphql.validation.Size.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
 directive @ContainerSize(min : Int = 0, max : Int = 2147483647, message : String = "graphql.validation.ContainerSize.message") on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+"""
+The @OnDemand directive is used to mark fields that are only internally resolved when requested.
+Implementation Note: This will cause the code generator to omit the field from the generated DTOs.
+"""
+directive @OnDemand on FIELD_DEFINITION
