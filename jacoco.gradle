@@ -1,15 +1,15 @@
 jacoco {
-    toolVersion = "0.8.8"
+    toolVersion = "0.8.11"
 }
-
 test {
     finalizedBy jacocoTestReport
 }
 
+
 jacocoTestReport {
     reports {
-        xml.enabled true
-        html.enabled true
+        xml.required.set(true)
+        html.required.set(true)
         html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
     }
 }
