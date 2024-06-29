@@ -1,16 +1,16 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.0.6'
-	id 'io.spring.dependency-management' version '1.1.0'
-	id "io.github.kobylynskyi.graphql.codegen" version "5.7.2"	
-	id "org.sonarqube" version "4.0.0.2929"
+	id 'org.springframework.boot' version '3.+'
+	id 'io.spring.dependency-management' version '1.+'
+	id "io.github.kobylynskyi.graphql.codegen" version "5.+"
+	id "org.sonarqube" version "5.+"
 	id "jacoco"
 	
 }
 
-group = 'de.unistuttgart.iste.gits'
+group = 'de.unistuttgart.iste.meitrex'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
+sourceCompatibility = '21'
 
 def jacocoEnabled = System.properties.getProperty("jacocoEnabled") ?: "true"
 
@@ -26,7 +26,27 @@ sonarqube {
     property("sonar.organization", "meitrex")
     property("sonar.host.url", "https://sonarcloud.io")
   }
+}
 
+// workaround to fetch schema files from external repositories
+// as gradle only supports java dependencies
+def fetchFilesFromRepo(String repository, List<String> files) {
+	def baseurl = "https://raw.githubusercontent.com/MEITREX/"
+	def fileUrl = "${baseurl}${repository}/main/src/main/resources/graphql/"
+	def outputDir = "src/main/resources/graphql"
+
+	files.each { file ->
+		tasks.register("fetchExternalSchema-${file.capitalize()}", Exec) {
+			commandLine 'curl', "${fileUrl}${file}", '-o', "${outputDir}/${repository}/${file}"
+		}
+	}
+}
+
+fetchFilesFromRepo("common", ["directives.graphqls", "scalars.graphqls", "sortFilterPagination.graphqls"])
+
+// run this task to fetch the latest schema files from the external github repositories
+tasks.register("fetchAllExternalSchemas", Task) {
+	dependsOn tasks.matching { it.name.startsWith("fetchExternalSchema-") }
 }
 
 // Automatically generate DTOs from GraphQL schema:
@@ -34,7 +54,7 @@ graphqlCodegen {
 	// all config options:
 	// https://github.com/kobylynskyi/graphql-java-codegen/blob/main/docs/codegen-options.md
 	outputDir = new File("$buildDir/generated")
-	packageName = "de.unistuttgart.iste.gits.generated.dto"
+	packageName = "de.unistuttgart.iste.meitrex.generated.dto"
 	generatedAnnotation = "jakarta.annotation.Generated"
 	modelValidationAnnotation = "jakarta.validation.constraints.NotNull"
 	generateApis = false // set to false as the generator does not support spring boot graphQL
@@ -48,6 +68,7 @@ graphqlCodegen {
 	]
 	generateEqualsAndHashCode = true
 	generateToString = true
+	fieldsWithResolvers = ["@OnDemand"]
 }
 
 // Automatically generate GraphQL code on project build:
@@ -55,6 +76,16 @@ compileJava.dependsOn 'graphqlCodegen'
 
 // Add generated sources to your project source sets:
 sourceSets.main.java.srcDir "$buildDir/generated"
+
+// Automatically generate API documentation on project build:
+// Remark: Only works on Windows
+tasks.register('generateApiDocs', Exec) {
+	commandLine 'cmd', '/c', 'generate_api_doc.bat'
+}
+
+tasks.named('assemble') {
+	finalizedBy('generateApiDocs')
+}
 
 configurations {
 	compileOnly {
@@ -67,17 +98,16 @@ repositories {
 }
 
 dependencies {
-	implementation 'de.unistuttgart.iste.gits:gits-common:0.6.4'
-	implementation 'de.unistuttgart.iste.gits:content_service:0.6.2'
-	implementation 'com.google.code.findbugs:jsr305:3.0.2' // removes a gradle warning about an unknown annotation
+	implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.0.6'
+	implementation 'de.unistuttgart.iste.meitrex:content_service:1.0.6'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.modelmapper:modelmapper:3.+'
-	implementation 'com.graphql-java:graphql-java-extended-scalars:20.0'
-	implementation 'com.graphql-java:graphql-java-extended-validation:20.0'
+	implementation 'com.graphql-java:graphql-java-extended-scalars:22.0'
+	implementation 'com.graphql-java:graphql-java-extended-validation:22.0'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'io.dapr:dapr-sdk:1.9.0' // Dapr's core SDK with all features, except Actors.
 	implementation 'io.dapr:dapr-sdk-springboot:1.9.0' // Dapr's SDK integration with SpringBoot
@@ -86,18 +116,16 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'de.unistuttgart.iste.gits:gits-common-test:0.3.2'
+	testImplementation 'de.unistuttgart.iste.meitrex:meitrex-common-test:1.0.6'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework:spring-webflux'
 	testImplementation 'org.springframework.graphql:spring-graphql-test'
-	testImplementation "org.mockito:mockito-core:3.+"
+	testImplementation "org.mockito:mockito-core:5.+"
 	testImplementation 'org.hamcrest:hamcrest:2.+'
-	testImplementation "org.testcontainers:postgresql:1.18.3"
-	testImplementation "org.testcontainers:junit-jupiter:1.18.3"
+	testImplementation "org.testcontainers:postgresql:1.+"
+	testImplementation "org.testcontainers:junit-jupiter:1.+"
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
-
-tasks.withType(Test).configureEach { testLogging.showStandardStreams = true }
