@@ -23,7 +23,7 @@ services:
       - 7000
       - 7001
     ports:
-      - "7000:7000"
+      - "7002:7000"
       - "7001:7001"
     depends_on:
       - database
