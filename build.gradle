@@ -108,7 +108,7 @@ repositories {
 }
 
 dependencies {
-	implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.4.11'
+	implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.4.12'
 	implementation 'de.unistuttgart.iste.meitrex:content_service:1.6.0'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
